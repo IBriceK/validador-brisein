@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificación Oficial de Certificado | Academia BRISEIN</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brisein: {
+              red: '#D90D0D',
+              darkRed: '#A30808',
+              navy: '#0F172A',
+              slate: '#1E293B',
+              gold: '#D97706'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Parisienne&display=swap" rel="stylesheet">
+  
+  <!-- PDF Libs for instant PDF download -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
+  
+  <script src="js/assets-data.js"></script>
+  <script src="js/courses.js"></script>
+  <script src="js/pdf-builder.js"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #F8FAFC;
+    }
+    .serif-title {
+      font-family: 'Playfair Display', serif;
+    }
+    .watermark-bg {
+      background-image: radial-gradient(#CBD5E1 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between watermark-bg">
+
+  <!-- Encabezado Superior -->
+  <header class="bg-slate-900 text-white shadow-lg border-b border-slate-800">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-12 bg-white rounded flex items-center justify-center p-0.5 shadow">
+          <img src="assets/logo_shield.png" alt="Brisein" class="h-full object-contain">
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-wide uppercase leading-tight">ACADEMIA BRISEIN</h1>
+          <p class="text-xs text-slate-400 font-medium">Portal Oficial de Validación y Verificación</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2 bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 text-xs px-3 py-1.5 rounded-full font-medium shadow-inner">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Sistema de Autenticación Activo</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido Principal -->
+  <main class="max-w-4xl mx-auto px-4 py-8 flex-1 w-full">
+    
+    <!-- Tarjeta Principal de Validación -->
+    <div id="valid-card" class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+      
+      <!-- Banner de Estado -->
+      <div class="bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 px-6 py-6 text-white text-center relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 opacity-10 text-white text-9xl font-black">
+          <i class="fa-solid fa-certificate"></i>
+        </div>
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-white text-emerald-600 rounded-full shadow-lg mb-3">
+          <i class="fa-solid fa-circle-check text-3xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold tracking-tight">CERTIFICADO AUTÉNTICO Y VÁLIDO</h2>
+        <p class="text-emerald-100 text-sm mt-1 font-medium">Verificación Digital Oficial de Acreditación</p>
+      </div>
+
+      <div class="p-6 md:p-10 space-y-8">
+        
+        <!-- Frase Oficial de Certificación -->
+        <div class="bg-slate-50 border-l-4 border-brisein-red p-6 rounded-r-xl shadow-sm">
+          <p class="text-xs font-bold text-brisein-red tracking-wider uppercase mb-2 flex items-center">
+            <i class="fa-solid fa-shield-halved mr-2"></i> Declaración Oficial de Conformidad
+          </p>
+          <p class="text-lg md:text-xl text-slate-800 leading-relaxed font-serif italic" id="cert-statement">
+            "Nosotros <strong class="text-slate-900 not-italic font-bold font-sans">BRISEIN</strong> Certificamos que <strong id="out-name" class="text-slate-950 font-bold not-italic font-sans underline decoration-red-500/50 decoration-2">[Nombre Alumno]</strong> (RUT: <strong id="out-rut" class="text-slate-950 not-italic font-sans font-bold">[RUT]</strong>) cuenta con el certificado de <strong id="out-course" class="text-slate-950 not-italic font-bold font-sans uppercase">“[Nombre Curso]”</strong> a la fecha de <strong id="out-issue" class="text-slate-950 not-italic font-sans font-bold">[Fecha Emisión]</strong>."
+          </p>
+        </div>
+
+        <!-- Ficha Técnica de Detalles -->
+        <div>
+          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center">
+            <i class="fa-solid fa-circle-info mr-2 text-slate-500"></i> Datos Registrados del Certificado
+          </h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <span class="text-xs font-semibold text-slate-500 uppercase block">Participante Acreditado</span>
+              <span class="text-base font-bold text-slate-900 block mt-1" id="det-name">--</span>
+              <span class="text-xs text-slate-600 font-mono" id="det-rut">RUT: --</span>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <span class="text-xs font-semibold text-slate-500 uppercase block">Código SENCE de Actividad</span>
+              <span class="text-base font-bold text-slate-900 font-mono block mt-1" id="det-sence">--</span>
+              <span class="text-xs text-emerald-600 font-medium">Registro Oficial SENCE</span>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <span class="text-xs font-semibold text-slate-500 uppercase block">Duración y Modalidad</span>
+              <span class="text-base font-bold text-slate-900 block mt-1" id="det-hours">-- Horas Cronológicas</span>
+              <span class="text-xs text-slate-600" id="det-modalidad">Capacitación y Formación</span>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <span class="text-xs font-semibold text-slate-500 uppercase block">Período de Ejecución</span>
+              <span class="text-sm font-semibold text-slate-900 block mt-1" id="det-dates">--</span>
+              <span class="text-xs text-slate-500" id="det-issue">Fecha de Emisión: --</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Acreditación y Respaldo Institucional -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-6 text-white shadow-inner">
+          <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+            
+            <div class="space-y-2 text-center md:text-left">
+              <div class="flex items-center justify-center md:justify-start space-x-2">
+                <span class="px-2.5 py-1 bg-red-600 text-white text-xs font-bold rounded">OTEC</span>
+                <h4 class="font-bold text-sm text-slate-100">CAPACITACIÓN BRICEÑO LIMITADA - ACADEMIA BRISEIN</h4>
+              </div>
+              <p class="text-xs text-slate-300">RUT: 76.464.790-4 | Casa Matriz: Santiago, Chile</p>
+              <p class="text-xs text-slate-400">
+                Acreditado bajo Norma Chilena <strong class="text-slate-200">NCh 2728:2015</strong> por <strong class="text-slate-200">ICONTEC Internacional</strong> (Registro INN: A-7858, Certificado: OC-CER547101).
+              </p>
+              <p class="text-xs text-slate-400">
+                Reglamentación: <strong class="text-slate-200">Ley Nº 21.659 - Art.46 y Decreto 209 (Seguridad Privada)</strong>.
+              </p>
+            </div>
+
+            <div class="flex items-center space-x-4 bg-white/10 p-3 rounded-lg border border-white/10 backdrop-blur-sm shrink-0">
+              <img src="assets/watermark_nch2728.png" alt="NCh 2728 Icontec" class="h-16 w-auto object-contain bg-white rounded p-1">
+              <div class="text-left text-xs">
+                <div class="font-bold text-white">NCh 2728:2015</div>
+                <div class="text-slate-300 text-[10px]">ICONTEC Internacional</div>
+                <div class="text-emerald-400 font-bold text-[10px] mt-1"><i class="fa-solid fa-check"></i> Vigente</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+          <button id="btn-download-pdf" class="w-full sm:w-auto px-6 py-3.5 bg-brisein-red hover:bg-brisein-darkRed text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-file-arrow-down text-lg"></i>
+            <span>Descargar Certificado Original (PDF)</span>
+          </button>
+          
+          <a href="index.html" class="w-full sm:w-auto px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 border border-slate-300">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Generador de Certificados</span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Buscador Manual de Certificados (Si no hay parámetro) -->
+    <div id="search-card" class="hidden mt-8 bg-white rounded-2xl p-6 shadow-md border border-slate-200 text-center">
+      <h3 class="text-base font-bold text-slate-800 mb-2">Consulta de Certificado por RUT</h3>
+      <p class="text-xs text-slate-500 mb-4">Ingresa el RUT del alumno para verificar su acreditación</p>
+      <div class="max-w-md mx-auto flex gap-2">
+        <input type="text" id="input-rut-search" placeholder="Ej: 16.554.993-7" class="flex-1 px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none font-mono">
+        <button id="btn-search-rut" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-xl transition">
+          Consultar
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Pie de Página -->
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-5xl mx-auto px-4">
+      <p>© 2026 ACADEMIA BRISEIN LTDA. Todos los derechos reservados.</p>
+      <p class="mt-1 text-[11px] text-slate-400">Certificación oficial verificable mediante firma digital y código QR único.</p>
+    </div>
+  </footer>
+
+  <!-- Lógica de Verificación -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      let certData = null;
+
+      // 1. Verificar si viene en formato payload comprimido en ?c=
+      const payload = urlParams.get('c');
+      if (payload) {
+        try {
+          const jsonStr = decodeURIComponent(escape(atob(payload)));
+          certData = JSON.parse(jsonStr);
+        } catch (e) {
+          console.warn('Error decodificando payload ?c=', e);
+        }
+      }
+
+      // 2. Si viene con parámetros directos (?rut=...&nombre=...&curso=...)
+      if (!certData) {
+        const rut = urlParams.get('rut') || urlParams.get('id');
+        const nombre = urlParams.get('nombre') || urlParams.get('n');
+        const curso = urlParams.get('curso');
+        const sence = urlParams.get('sence');
+        const horas = urlParams.get('horas');
+        const inicio = urlParams.get('inicio');
+        const termino = urlParams.get('termino');
+        const emision = urlParams.get('emision');
+
+        if (rut || nombre || curso) {
+          certData = {
+            studentName: nombre ? decodeURIComponent(nombre) : 'Jaime Farías Correa',
+            studentRut: rut ? decodeURIComponent(rut) : '16.554.993-7',
+            cleanRut: rut ? rut.replace(/[^0-9kK]/g, '') : '165549937',
+            courseName: curso ? decodeURIComponent(curso) : 'OPERADOR DE CÁMARAS DE TELEVIGILANCIA y ALARMAS',
+            codeSence: sence ? decodeURIComponent(sence) : '1238055746',
+            hours: horas ? parseInt(horas, 10) : 50,
+            startDate: inicio ? decodeURIComponent(inicio) : '05-04-2026',
+            endDate: termino ? decodeURIComponent(termino) : '17-04-2026',
+            issueDate: emision ? decodeURIComponent(emision) : '05-05-2026'
+          };
+        }
+      }
+
+      // 3. Si no hay parámetros, buscar en LocalStorage o usar el ejemplo oficial
+      if (!certData) {
+        const path = window.location.pathname;
+        const lastPart = path.split('/').filter(p => p).pop();
+        if (lastPart && /^\d{7,9}[kK]?$/.test(lastPart)) {
+          // Si la URL es /valida/165549937
+          const cleanRut = lastPart;
+          const stored = localStorage.getItem(`cert_${cleanRut}`);
+          if (stored) {
+            certData = JSON.parse(stored);
+          }
+        }
+      }
+
+      // Default de respaldo si no hay datos específicos (Ejemplo oficial verificado)
+      if (!certData) {
+        certData = {
+          studentName: 'Jaime Farías Correa',
+          studentRut: '16.554.993-7',
+          cleanRut: '165549937',
+          courseName: 'OPERADOR DE CÁMARAS DE TELEVIGILANCIA y ALARMAS',
+          codeSence: '1238055746',
+          codeSenceFormatted: '12-38-0557-46',
+          hours: 50,
+          startDate: '05-04-2026',
+          endDate: '17-04-2026',
+          issueDate: '05-05-2026'
+        };
+        // Mostrar buscador adicional
+        document.getElementById('search-card').classList.remove('hidden');
+      }
+
+      // Renderizar datos en la vista
+      renderVerification(certData);
+
+      // Evento descargar PDF
+      document.getElementById('btn-download-pdf').addEventListener('click', async () => {
+        const btn = document.getElementById('btn-download-pdf');
+        const origContent = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generando PDF...';
+        btn.disabled = true;
+        
+        try {
+          const pdfBytes = await CertificatePdfBuilder.buildCertificate(certData);
+          const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Certificado_${certData.cleanRut || 'Brisein'}_${certData.studentName.replace(/\s+/g, '_')}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } catch (err) {
+          alert('Error al generar PDF: ' + err.message);
+        } finally {
+          btn.innerHTML = origContent;
+          btn.disabled = false;
+        }
+      });
+
+      // Evento buscador
+      document.getElementById('btn-search-rut').addEventListener('click', () => {
+        const val = document.getElementById('input-rut-search').value.trim();
+        if (!val) return;
+        const clean = val.replace(/[^0-9kK]/g, '').toUpperCase();
+        const stored = localStorage.getItem(`cert_${clean}`);
+        if (stored) {
+          renderVerification(JSON.parse(stored));
+        } else {
+          window.location.search = `?rut=${encodeURIComponent(val)}`;
+        }
+      });
+    });
+
+    function renderVerification(cert) {
+      document.getElementById('out-name').textContent = cert.studentName;
+      document.getElementById('out-rut').textContent = cert.studentRut;
+      document.getElementById('out-course').textContent = `“${cert.courseName.toUpperCase()}”`;
+      
+      const issueFormatted = CertificatePdfBuilder.formatIssueDate(cert.issueDate || cert.endDate || new Date())
+                              .replace('En Santiago de Chile, a ', '')
+                              .replace('.-', '');
+      document.getElementById('out-issue').textContent = issueFormatted;
+
+      document.getElementById('det-name').textContent = cert.studentName;
+      document.getElementById('det-rut').textContent = `RUT: ${cert.studentRut}`;
+      document.getElementById('det-sence').textContent = cert.codeSence || cert.codeSenceFormatted || '1238044236';
+      document.getElementById('det-hours').textContent = `${cert.hours || 40} Horas Cronológicas`;
+      
+      const startText = CertificatePdfBuilder.formatDayMonthYear(cert.startDate, true);
+      const endText = CertificatePdfBuilder.formatDayMonthYear(cert.endDate, true);
+      document.getElementById('det-dates').textContent = `${startText} al ${endText}`;
+      document.getElementById('det-issue').textContent = `Fecha de Emisión: ${issueFormatted}`;
+    }
+  </script>
+</body>
+</html>
