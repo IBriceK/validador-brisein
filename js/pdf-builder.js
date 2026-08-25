@@ -144,7 +144,7 @@ class CertificatePdfBuilder {
       }
     }
 
-    // 3. Imágenes de Assets (Escudo, Marca de agua, Timbre, Firma)
+    // 3. Imágenes de Assets (Escudo, Marca de agua, Timbre Grande, Firma Grande)
     const assetsObj = (typeof ASSETS_DATA !== 'undefined') ? ASSETS_DATA : (typeof global !== 'undefined' && global.ASSETS_DATA ? global.ASSETS_DATA : null);
     if (assetsObj) {
       if (assetsObj.logo_shield) {
@@ -174,27 +174,29 @@ class CertificatePdfBuilder {
         });
       }
 
+      // Timbre Oficial (Agrandado para presencia destacada)
       if (assetsObj.stamp_seal) {
         const stampB64 = assetsObj.stamp_seal.split(',')[1];
         const stampBytes = Uint8Array.from(atob(stampB64), c => c.charCodeAt(0));
         const stamp = await pdfDoc.embedPng(stampBytes);
         page.drawImage(stamp, {
-          x: 172,
-          y: 80,
-          width: 82,
-          height: 82
+          x: 155,
+          y: 65,
+          width: 108,
+          height: 108
         });
       }
 
+      // Firma Oficial Ramón Briceño (Agrandada con proporción elegante)
       if (assetsObj.signature) {
         const sigB64 = assetsObj.signature.split(',')[1];
         const sigBytes = Uint8Array.from(atob(sigB64), c => c.charCodeAt(0));
         const signature = await pdfDoc.embedPng(sigBytes);
         page.drawImage(signature, {
-          x: 250,
-          y: 105,
-          width: 125,
-          height: 110
+          x: 290,
+          y: 88,
+          width: 165,
+          height: 145
         });
       }
     }
@@ -243,11 +245,14 @@ class CertificatePdfBuilder {
     const hours = certData.hours || 40;
     const startDateText = this.formatDayMonthYear(certData.startDate, true);
     const endDateText = this.formatDayMonthYear(certData.endDate, true);
-    const issueDateText = this.formatIssueDate(certData.issueDate || certData.endDate || new Date());
+    const issueDateText = this.formatIssueDate(certData.issueDate || new Date());
     const companyName = (certData.companyName || '').trim();
     const companyRut = (certData.companyRut || '').trim();
     const legalNorm = certData.legalNorm || 'Ley Nº 21.659 - Art.46 y Decreto 209 que aprueba Reglamento de Seguridad Privada';
-    const locationText = (certData.locationText || '').trim();
+    let locationText = (certData.locationText || '').trim();
+    if (locationText.endsWith('.')) {
+      locationText = locationText.slice(0, -1);
+    }
 
     // Si viene con empresa (ej: TRANSPORTES TRANSRUT LIMITADA)
     if (companyName) {
@@ -335,30 +340,32 @@ class CertificatePdfBuilder {
       x: leftX, y: currentY, size: 11.5, font: timesItalic
     });
 
-    // 6. Pie de Firma y Cargo
+    // 6. Pie de Firma y Cargo (Línea elegante centrada sobre la firma)
+    const sigLineStartX = 280;
+    const sigLineWidth = 180;
     page.drawLine({
-      start: { x: 250, y: 102 },
-      end: { x: 395, y: 102 },
-      thickness: 0.75,
-      color: rgb(0.3, 0.3, 0.3)
+      start: { x: sigLineStartX, y: 92 },
+      end: { x: sigLineStartX + sigLineWidth, y: 92 },
+      thickness: 0.8,
+      color: rgb(0.2, 0.2, 0.2)
     });
 
     const sigName = certData.signatoryName || 'Ramón Briceño Rodríguez';
-    const sigNameWidth = timesItalic.widthOfTextAtSize(sigName, 9.5);
+    const sigNameWidth = timesItalic.widthOfTextAtSize(sigName, 10.5);
     page.drawText(sigName, {
-      x: 250 + (145 - sigNameWidth) / 2,
-      y: 90,
-      size: 9.5,
+      x: sigLineStartX + (sigLineWidth - sigNameWidth) / 2,
+      y: 78,
+      size: 10.5,
       font: timesItalic,
       color: rgb(0.1, 0.1, 0.1)
     });
 
     const sigTitle = certData.signatoryTitle || 'Director Gerente';
-    const sigTitleWidth = timesItalic.widthOfTextAtSize(sigTitle, 9.5);
+    const sigTitleWidth = timesItalic.widthOfTextAtSize(sigTitle, 10);
     page.drawText(sigTitle, {
-      x: 250 + (145 - sigTitleWidth) / 2,
-      y: 78,
-      size: 9.5,
+      x: sigLineStartX + (sigLineWidth - sigTitleWidth) / 2,
+      y: 65,
+      size: 10,
       font: timesItalic,
       color: rgb(0.1, 0.1, 0.1)
     });
