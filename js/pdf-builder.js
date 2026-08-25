@@ -68,7 +68,7 @@ class CertificatePdfBuilder {
    * @returns {Promise<Uint8Array>} Bytes del archivo PDF
    */
   static async buildCertificate(certData) {
-    const { PDFDocument, rgb, StandardFonts } = window.PDFLib || (typeof require !== 'undefined' ? require('pdf-lib') : {});
+    const { PDFDocument, rgb, StandardFonts } = typeof window !== "undefined" && window.PDFLib ? window.PDFLib : null || (typeof require !== 'undefined' ? require('pdf-lib') : {});
     if (!PDFDocument) {
       throw new Error('pdf-lib no está disponible.');
     }
@@ -76,8 +76,8 @@ class CertificatePdfBuilder {
     const pdfDoc = await PDFDocument.create();
     
     // Registrar fontkit para fuentes personalizadas
-    if (window.fontkit && pdfDoc.registerFontkit) {
-      pdfDoc.registerFontkit(window.fontkit);
+    if (typeof window !== "undefined" && window.fontkit ? window.fontkit : null && pdfDoc.registerFontkit) {
+      pdfDoc.registerFontkit(typeof window !== "undefined" && window.fontkit ? window.fontkit : null);
     }
 
     // Tamaño A4 estándar: 595.28 x 841.89 pt
@@ -93,7 +93,7 @@ class CertificatePdfBuilder {
     // Intentar cargar fuente caligráfica para el nombre
     let scriptFont = null;
     try {
-      if (typeof ASSETS_DATA !== 'undefined' && ASSETS_DATA.font_script && window.fontkit) {
+      if (typeof ASSETS_DATA !== 'undefined' && ASSETS_DATA.font_script && typeof window !== "undefined" && window.fontkit ? window.fontkit : null) {
         const fontB64 = ASSETS_DATA.font_script.split(',')[1];
         const fontBytes = Uint8Array.from(atob(fontB64), c => c.charCodeAt(0));
         scriptFont = await pdfDoc.embedFont(fontBytes);
@@ -114,7 +114,7 @@ class CertificatePdfBuilder {
 
     // 2. Código QR en la esquina superior izquierda
     const verificationUrl = certData.verificationUrl || `https://brisein.cl/valida/${certData.cleanRut || certData.rut || '123'}`;
-    const QRCodeLib = window.QRCode || (typeof require !== 'undefined' ? require('qrcode') : null);
+    const QRCodeLib = typeof window !== "undefined" && window.QRCode ? window.QRCode : null || (typeof require !== 'undefined' ? require('qrcode') : null);
     
     if (QRCodeLib) {
       let qrDataUrl = '';
