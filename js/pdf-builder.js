@@ -174,29 +174,29 @@ class CertificatePdfBuilder {
         });
       }
 
-      // Timbre Oficial Agrandado
+      // Timbre Oficial Grande y Definido
       if (assetsObj.stamp_seal) {
         const stampB64 = assetsObj.stamp_seal.split(',')[1];
         const stampBytes = Uint8Array.from(atob(stampB64), c => c.charCodeAt(0));
         const stamp = await pdfDoc.embedPng(stampBytes);
         page.drawImage(stamp, {
-          x: 155,
-          y: 65,
-          width: 108,
-          height: 108
+          x: 135,
+          y: 50,
+          width: 125,
+          height: 125
         });
       }
 
-      // Firma Oficial Ramón Briceño Agrandada
+      // Firma Oficial Ramón Briceño GRANDE e Imponente sobre la línea
       if (assetsObj.signature) {
         const sigB64 = assetsObj.signature.split(',')[1];
         const sigBytes = Uint8Array.from(atob(sigB64), c => c.charCodeAt(0));
         const signature = await pdfDoc.embedPng(sigBytes);
         page.drawImage(signature, {
-          x: 290,
-          y: 88,
-          width: 165,
-          height: 145
+          x: 270,
+          y: 75,
+          width: 220,
+          height: 180
         });
       }
     }
@@ -347,9 +347,9 @@ class CertificatePdfBuilder {
       x: leftX, y: currentY, size: 11.5, font: timesItalic
     });
 
-    // 6. Pie de Firma y Cargo (Línea elegante centrada sobre la firma)
-    const sigLineStartX = 280;
-    const sigLineWidth = 180;
+    // 6. Pie de Firma y Cargo (Línea elegante centrada)
+    const sigLineStartX = 285;
+    const sigLineWidth = 190;
     page.drawLine({
       start: { x: sigLineStartX, y: 92 },
       end: { x: sigLineStartX + sigLineWidth, y: 92 },
