@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verificación Oficial de Certificado | Academia BRISEIN</title>
+  <title>Verificación Oficial de Certificados | Academia BRISEIN</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -16,8 +16,7 @@
               red: '#D90D0D',
               darkRed: '#A30808',
               navy: '#0F172A',
-              slate: '#1E293B',
-              gold: '#D97706'
+              slate: '#1E293B'
             }
           }
         }
@@ -25,11 +24,11 @@
     }
   </script>
   
-  <!-- FontAwesome -->
+  <!-- FontAwesome & Google Fonts -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Parisienne&display=swap" rel="stylesheet">
   
-  <!-- PDF Libs for instant PDF download -->
+  <!-- PDF Libs para descarga instantánea -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
@@ -42,9 +41,6 @@
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       background-color: #F8FAFC;
-    }
-    .serif-title {
-      font-family: 'Playfair Display', serif;
     }
     .watermark-bg {
       background-image: radial-gradient(#CBD5E1 1px, transparent 1px);
@@ -76,10 +72,58 @@
   <!-- Contenido Principal -->
   <main class="max-w-4xl mx-auto px-4 py-8 flex-1 w-full">
     
-    <!-- Tarjeta Principal de Validación -->
-    <div id="valid-card" class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+    <!-- VISTA 1: VISTA INICIAL (Cuando se entra a la web sin escanear QR) -->
+    <div id="home-view" class="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 sm:p-12 text-center space-y-8">
       
-      <!-- Banner de Estado -->
+      <div class="w-20 h-20 bg-red-50 text-brisein-red rounded-3xl mx-auto flex items-center justify-center shadow-inner">
+        <i class="fa-solid fa-qrcode text-4xl"></i>
+      </div>
+
+      <div class="max-w-xl mx-auto space-y-2">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Verificación Digital de Certificados</h2>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          Consulta y valida la autenticidad de los certificados emitidos por <strong>Academia BRISEIN LTDA.</strong> acreditados bajo la norma <strong>NCh 2728:2015</strong>.
+        </p>
+      </div>
+
+      <!-- Buscador por RUT -->
+      <div class="max-w-md mx-auto bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider text-left">Consultar por RUT del Alumno:</label>
+        <div class="flex gap-2">
+          <input type="text" id="input-rut-search" placeholder="Ej: 16.554.993-7" class="flex-1 px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-red-500 focus:outline-none shadow-sm">
+          <button id="btn-search-rut" class="px-6 py-3 bg-brisein-red hover:bg-brisein-darkRed text-white text-sm font-bold rounded-xl transition shadow flex items-center space-x-1.5">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Verificar</span>
+          </button>
+        </div>
+        <p id="search-msg" class="text-xs text-slate-400 text-left">Ingresa el RUT con o sin puntos y guión.</p>
+      </div>
+
+      <!-- Sellos y Respaldo Institucional -->
+      <div class="pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
+          <i class="fa-solid fa-award text-brisein-red text-xl mb-2"></i>
+          <h4 class="text-xs font-bold text-slate-900">OTEC Certificado</h4>
+          <p class="text-[11px] text-slate-500 mt-1">Norma Chilena NCh 2728:2015 por ICONTEC Internacional.</p>
+        </div>
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
+          <i class="fa-solid fa-scale-balanced text-brisein-red text-xl mb-2"></i>
+          <h4 class="text-xs font-bold text-slate-900">Marco Legal Oficial</h4>
+          <p class="text-[11px] text-slate-500 mt-1">Cumplimiento Ley Nº 21.659 (Art. 46) y Decreto 209.</p>
+        </div>
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
+          <i class="fa-solid fa-shield-check text-brisein-red text-xl mb-2"></i>
+          <h4 class="text-xs font-bold text-slate-900">Firma Verificable</h4>
+          <p class="text-[11px] text-slate-500 mt-1">Autenticidad respaldada por código QR único e infalsificable.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VISTA 2: TARJETA DE RESULTADO DE CERTIFICADO VERIFICADO (Cuando se escanea el QR) -->
+    <div id="valid-card" class="hidden bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+      
+      <!-- Banner de Estado Verde -->
       <div class="bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 px-6 py-6 text-white text-center relative overflow-hidden">
         <div class="absolute -right-6 -bottom-6 opacity-10 text-white text-9xl font-black">
           <i class="fa-solid fa-certificate"></i>
@@ -175,24 +219,12 @@
             <span>Descargar Certificado Original (PDF)</span>
           </button>
           
-          <a href="index.html" class="w-full sm:w-auto px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 border border-slate-300">
-            <i class="fa-solid fa-arrow-left"></i>
-            <span>Generador de Certificados</span>
-          </a>
+          <button id="btn-new-search" class="w-full sm:w-auto px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 border border-slate-300">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Consultar Otro Certificado</span>
+          </button>
         </div>
 
-      </div>
-    </div>
-
-    <!-- Buscador Manual de Certificados (Si no hay parámetro) -->
-    <div id="search-card" class="hidden mt-8 bg-white rounded-2xl p-6 shadow-md border border-slate-200 text-center">
-      <h3 class="text-base font-bold text-slate-800 mb-2">Consulta de Certificado por RUT</h3>
-      <p class="text-xs text-slate-500 mb-4">Ingresa el RUT del alumno para verificar su acreditación</p>
-      <div class="max-w-md mx-auto flex gap-2">
-        <input type="text" id="input-rut-search" placeholder="Ej: 16.554.993-7" class="flex-1 px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none font-mono">
-        <button id="btn-search-rut" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-xl transition">
-          Consultar
-        </button>
       </div>
     </div>
 
@@ -210,10 +242,9 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
-      
       let certData = null;
 
-      // 1. Verificar si viene en formato payload comprimido en ?c=
+      // 1. Verificar si viene en formato payload comprimido en ?c= (desde el QR)
       const payload = urlParams.get('c');
       if (payload) {
         try {
@@ -235,58 +266,67 @@
         const termino = urlParams.get('termino');
         const emision = urlParams.get('emision');
 
-        if (rut || nombre || curso) {
+        if (rut && nombre && curso) {
           certData = {
-            studentName: nombre ? decodeURIComponent(nombre) : 'Jaime Farías Correa',
-            studentRut: rut ? decodeURIComponent(rut) : '16.554.993-7',
-            cleanRut: rut ? rut.replace(/[^0-9kK]/g, '') : '165549937',
-            courseName: curso ? decodeURIComponent(curso) : 'OPERADOR DE CÁMARAS DE TELEVIGILANCIA y ALARMAS',
-            codeSence: sence ? decodeURIComponent(sence) : '1238055746',
-            hours: horas ? parseInt(horas, 10) : 50,
-            startDate: inicio ? decodeURIComponent(inicio) : '05-04-2026',
-            endDate: termino ? decodeURIComponent(termino) : '17-04-2026',
-            issueDate: emision ? decodeURIComponent(emision) : '05-05-2026'
+            studentName: decodeURIComponent(nombre),
+            studentRut: decodeURIComponent(rut),
+            cleanRut: rut.replace(/[^0-9kK]/g, ''),
+            courseName: decodeURIComponent(curso),
+            codeSence: sence ? decodeURIComponent(sence) : '1238044236',
+            hours: horas ? parseInt(horas, 10) : 40,
+            startDate: inicio ? decodeURIComponent(inicio) : '',
+            endDate: termino ? decodeURIComponent(termino) : '',
+            issueDate: emision ? decodeURIComponent(emision) : ''
           };
         }
       }
 
-      // 3. Si no hay parámetros, buscar en LocalStorage o usar el ejemplo oficial
-      if (!certData) {
-        const path = window.location.pathname;
-        const lastPart = path.split('/').filter(p => p).pop();
-        if (lastPart && /^\d{7,9}[kK]?$/.test(lastPart)) {
-          // Si la URL es /valida/165549937
-          const cleanRut = lastPart;
-          const stored = localStorage.getItem(`cert_${cleanRut}`);
-          if (stored) {
-            certData = JSON.parse(stored);
-          }
+      // 3. Si se escaneó un QR o se pasó un certificado, mostrar la tarjeta de verificación
+      if (certData && certData.studentName && certData.courseName) {
+        showVerification(certData);
+      } else {
+        // Si no viene nada en la URL, mostrar el portal de búsqueda limpio
+        showHome();
+      }
+
+      // Evento de búsqueda por RUT
+      document.getElementById('btn-search-rut').addEventListener('click', handleSearch);
+      document.getElementById('input-rut-search').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleSearch();
+      });
+
+      function handleSearch() {
+        const val = document.getElementById('input-rut-search').value.trim();
+        const msg = document.getElementById('search-msg');
+        if (!val) {
+          msg.textContent = 'Por favor ingresa un RUT para consultar.';
+          msg.className = 'text-xs text-red-500 text-left font-medium';
+          return;
         }
+
+        const clean = val.replace(/[^0-9kK]/g, '').toUpperCase();
+        const stored = localStorage.getItem(`cert_${clean}`);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            showVerification(parsed);
+            return;
+          } catch (e) {}
+        }
+
+        msg.textContent = `No se encontró un certificado registrado para el RUT ${val}. Escanea directamente el código QR del documento.`;
+        msg.className = 'text-xs text-amber-600 text-left font-medium';
       }
 
-      // Default de respaldo si no hay datos específicos (Ejemplo oficial verificado)
-      if (!certData) {
-        certData = {
-          studentName: 'Jaime Farías Correa',
-          studentRut: '16.554.993-7',
-          cleanRut: '165549937',
-          courseName: 'OPERADOR DE CÁMARAS DE TELEVIGILANCIA y ALARMAS',
-          codeSence: '1238055746',
-          codeSenceFormatted: '12-38-0557-46',
-          hours: 50,
-          startDate: '05-04-2026',
-          endDate: '17-04-2026',
-          issueDate: '05-05-2026'
-        };
-        // Mostrar buscador adicional
-        document.getElementById('search-card').classList.remove('hidden');
-      }
-
-      // Renderizar datos en la vista
-      renderVerification(certData);
+      // Botón para volver a consultar
+      document.getElementById('btn-new-search').addEventListener('click', () => {
+        window.history.pushState({}, document.title, window.location.pathname);
+        showHome();
+      });
 
       // Evento descargar PDF
       document.getElementById('btn-download-pdf').addEventListener('click', async () => {
+        if (!certData) return;
         const btn = document.getElementById('btn-download-pdf');
         const origContent = btn.innerHTML;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generando PDF...';
@@ -310,22 +350,18 @@
           btn.disabled = false;
         }
       });
-
-      // Evento buscador
-      document.getElementById('btn-search-rut').addEventListener('click', () => {
-        const val = document.getElementById('input-rut-search').value.trim();
-        if (!val) return;
-        const clean = val.replace(/[^0-9kK]/g, '').toUpperCase();
-        const stored = localStorage.getItem(`cert_${clean}`);
-        if (stored) {
-          renderVerification(JSON.parse(stored));
-        } else {
-          window.location.search = `?rut=${encodeURIComponent(val)}`;
-        }
-      });
     });
 
-    function renderVerification(cert) {
+    function showHome() {
+      document.getElementById('home-view').classList.remove('hidden');
+      document.getElementById('valid-card').classList.add('hidden');
+      document.getElementById('input-rut-search').value = '';
+    }
+
+    function showVerification(cert) {
+      document.getElementById('home-view').classList.add('hidden');
+      document.getElementById('valid-card').classList.remove('hidden');
+
       document.getElementById('out-name').textContent = cert.studentName;
       document.getElementById('out-rut').textContent = cert.studentRut;
       document.getElementById('out-course').textContent = `“${cert.courseName.toUpperCase()}”`;
