@@ -100,8 +100,9 @@ class CertificatePdfBuilder {
     // Fuente caligráfica para el nombre
     let scriptFont = null;
     try {
-      if (typeof ASSETS_DATA !== 'undefined' && ASSETS_DATA.font_script && fontkitLib) {
-        const fontB64 = ASSETS_DATA.font_script.split(',')[1];
+      const assetsObj = (typeof ASSETS_DATA !== 'undefined') ? ASSETS_DATA : (typeof global !== 'undefined' && global.ASSETS_DATA ? global.ASSETS_DATA : null);
+      if (assetsObj && assetsObj.font_script && fontkitLib) {
+        const fontB64 = assetsObj.font_script.split(',')[1];
         const fontBytes = Uint8Array.from(atob(fontB64), c => c.charCodeAt(0));
         scriptFont = await pdfDoc.embedFont(fontBytes);
       }
@@ -144,9 +145,10 @@ class CertificatePdfBuilder {
     }
 
     // 3. Imágenes de Assets (Escudo, Marca de agua, Timbre, Firma)
-    if (typeof ASSETS_DATA !== 'undefined') {
-      if (ASSETS_DATA.logo_shield) {
-        const shieldB64 = ASSETS_DATA.logo_shield.split(',')[1];
+    const assetsObj = (typeof ASSETS_DATA !== 'undefined') ? ASSETS_DATA : (typeof global !== 'undefined' && global.ASSETS_DATA ? global.ASSETS_DATA : null);
+    if (assetsObj) {
+      if (assetsObj.logo_shield) {
+        const shieldB64 = assetsObj.logo_shield.split(',')[1];
         const shieldBytes = Uint8Array.from(atob(shieldB64), c => c.charCodeAt(0));
         const logoShield = await pdfDoc.embedPng(shieldBytes);
         const shieldDims = logoShield.scale(0.32);
@@ -158,8 +160,8 @@ class CertificatePdfBuilder {
         });
       }
 
-      if (ASSETS_DATA.watermark_nch2728) {
-        const wmB64 = ASSETS_DATA.watermark_nch2728.split(',')[1];
+      if (assetsObj.watermark_nch2728) {
+        const wmB64 = assetsObj.watermark_nch2728.split(',')[1];
         const wmBytes = Uint8Array.from(atob(wmB64), c => c.charCodeAt(0));
         const watermark = await pdfDoc.embedPng(wmBytes);
         const wmDims = watermark.scale(0.68);
@@ -172,8 +174,8 @@ class CertificatePdfBuilder {
         });
       }
 
-      if (ASSETS_DATA.stamp_seal) {
-        const stampB64 = ASSETS_DATA.stamp_seal.split(',')[1];
+      if (assetsObj.stamp_seal) {
+        const stampB64 = assetsObj.stamp_seal.split(',')[1];
         const stampBytes = Uint8Array.from(atob(stampB64), c => c.charCodeAt(0));
         const stamp = await pdfDoc.embedPng(stampBytes);
         page.drawImage(stamp, {
@@ -184,8 +186,8 @@ class CertificatePdfBuilder {
         });
       }
 
-      if (ASSETS_DATA.signature) {
-        const sigB64 = ASSETS_DATA.signature.split(',')[1];
+      if (assetsObj.signature) {
+        const sigB64 = assetsObj.signature.split(',')[1];
         const sigBytes = Uint8Array.from(atob(sigB64), c => c.charCodeAt(0));
         const signature = await pdfDoc.embedPng(sigBytes);
         page.drawImage(signature, {
@@ -232,7 +234,7 @@ class CertificatePdfBuilder {
     const leftX = 80;
     const maxContentWidth = 475;
     let currentY = 470;
-    const lineHeight = 21;
+    const lineHeight = 20.5;
 
     const studentName = certData.studentName || 'Nombre del Participante';
     const studentRut = certData.studentRut || '12.345.678-9';
@@ -245,7 +247,7 @@ class CertificatePdfBuilder {
     const companyName = (certData.companyName || '').trim();
     const companyRut = (certData.companyRut || '').trim();
     const legalNorm = certData.legalNorm || 'Ley Nº 21.659 - Art.46 y Decreto 209 que aprueba Reglamento de Seguridad Privada';
-    const locationText = certData.locationText || '';
+    const locationText = (certData.locationText || '').trim();
 
     // Si viene con empresa (ej: TRANSPORTES TRANSRUT LIMITADA)
     if (companyName) {
@@ -271,7 +273,7 @@ class CertificatePdfBuilder {
       }
       page.drawText(`RUT: ${studentRut}, realizó el curso sobre`, { x: xOffset, y: currentY, size: 11.5, font: timesItalic });
     } else {
-      // Formato estándar oficial
+      // Formato estándar
       const prefix1 = 'Por cuanto    don(a) ';
       page.drawText(prefix1, { x: leftX, y: currentY, size: 12, font: timesItalic });
       let xOffset = leftX + timesItalic.widthOfTextAtSize(prefix1, 12) + 6;
@@ -299,11 +301,13 @@ class CertificatePdfBuilder {
 
     // Nombre del Curso
     currentY -= lineHeight;
-    const courseLine = `“${courseName}”,`;
-    page.drawText(courseLine, { x: leftX, y: currentY, size: 12, font: timesBoldItalic });
+    const courseLines = this.wrapWords(`“${courseName}”,`, timesBoldItalic, 12, maxContentWidth);
+    for (const cLine of courseLines) {
+      page.drawText(cLine, { x: leftX, y: currentY, size: 12, font: timesBoldItalic });
+      currentY -= (lineHeight * 0.95);
+    }
 
-    // Normativa / Artículos y Decretos (Auto-envoltorio)
-    currentY -= lineHeight;
+    // Normativa / Artículos y Decretos
     const legalIntro = `conforme a la ${legalNorm}`;
     const legalLines = this.wrapWords(legalIntro, timesItalic, 11.5, maxContentWidth);
     for (const line of legalLines) {
@@ -311,25 +315,24 @@ class CertificatePdfBuilder {
       currentY -= (lineHeight * 0.95);
     }
 
-    // Fechas y Duración
-    page.drawText(`entre ${startDateText} y ${endDateText}, con una duración de`, {
-      x: leftX, y: currentY, size: 11.5, font: timesItalic
-    });
-    currentY -= lineHeight;
-    page.drawText(`${hours} horas cronológicas${locationText ? ', ' + locationText : ''}.`, {
-      x: leftX, y: currentY, size: 12, font: timesBold
-    });
+    // Fechas, Duración y Lugar (Envoltorio inteligente)
+    const datesAndDuration = `entre ${startDateText} y ${endDateText}, con una duración de ${hours} horas cronológicas${locationText ? ', ' + locationText : ''}.`;
+    const durLines = this.wrapWords(datesAndDuration, timesItalic, 11.5, maxContentWidth);
+    for (const dLine of durLines) {
+      page.drawText(dLine, { x: leftX, y: currentY, size: 11.5, font: timesItalic });
+      currentY -= (lineHeight * 0.95);
+    }
 
     // Código SENCE
-    currentY -= (lineHeight * 1.5);
+    currentY -= (lineHeight * 1.2);
     page.drawText(`Cº SENCE : ${codeSence}`, {
       x: leftX, y: currentY, size: 12.5, font: timesBold
     });
 
     // Fecha de Emisión
-    currentY -= (lineHeight * 1.5);
+    currentY -= (lineHeight * 1.3);
     page.drawText(issueDateText, {
-      x: leftX, y: currentY, size: 12, font: timesItalic
+      x: leftX, y: currentY, size: 11.5, font: timesItalic
     });
 
     // 6. Pie de Firma y Cargo
