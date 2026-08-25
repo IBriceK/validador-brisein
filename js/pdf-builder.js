@@ -1,5 +1,5 @@
 // Generador de Certificados PDF para Academia BRISEIN LTDA.
-// Soporta decretos y artículos variables, empresas mandantes y formato legal dinámico.
+// Soporta texto justificado tipográfico, decretos y artículos variables, empresas mandantes y formato legal dinámico.
 
 class CertificatePdfBuilder {
   static MONTHS = [
@@ -48,23 +48,87 @@ class CertificatePdfBuilder {
     return `En Santiago de Chile, a ${day} de ${month} de ${year}.-`;
   }
 
-  static wrapWords(text, font, fontSize, maxWidth) {
-    const words = text.split(/\s+/);
-    const lines = [];
-    let currentLine = '';
+  static renderJustifiedTokens(page, tokens, leftX, startY, lineHeight, maxWidth) {
+    const PDFLib = (typeof window !== 'undefined' && window.PDFLib) ? window.PDFLib : (typeof require !== 'undefined' ? require('pdf-lib') : {});
+    const rgb = PDFLib.rgb || ((r, g, b) => ({ type: 'RGB', red: r, green: g, blue: b }));
 
-    for (const word of words) {
-      const testLine = currentLine ? currentLine + ' ' + word : word;
-      const testWidth = font.widthOfTextAtSize(testLine, fontSize);
-      if (testWidth <= maxWidth) {
-        currentLine = testLine;
-      } else {
-        if (currentLine) lines.push(currentLine);
-        currentLine = word;
+    // 1. Desglosar tokens en palabras
+    const words = [];
+    for (const token of tokens) {
+      const textParts = token.text.split(/(\s+)/);
+      for (const part of textParts) {
+        if (!part || /^\s+$/.test(part)) continue;
+        const width = token.font.widthOfTextAtSize(part, token.size);
+        words.push({
+          text: part,
+          font: token.font,
+          size: token.size,
+          color: token.color || rgb(0, 0, 0),
+          yOffset: token.yOffset || 0,
+          width: width
+        });
       }
     }
-    if (currentLine) lines.push(currentLine);
-    return lines;
+
+    // 2. Agrupar palabras en líneas que quepan en maxWidth
+    const lines = [];
+    let currentLine = [];
+    let currentLineWidth = 0;
+
+    for (const word of words) {
+      const standardSpace = word.font.widthOfTextAtSize(' ', word.size);
+      const needed = currentLine.length === 0 ? word.width : currentLineWidth + standardSpace + word.width;
+
+      if (needed <= maxWidth) {
+        currentLine.push(word);
+        currentLineWidth = needed;
+      } else {
+        if (currentLine.length > 0) lines.push(currentLine);
+        currentLine = [word];
+        currentLineWidth = word.width;
+      }
+    }
+    if (currentLine.length > 0) lines.push(currentLine);
+
+    // 3. Dibujar líneas con justificado exacto
+    let currentY = startY;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const isLastLine = (i === lines.length - 1);
+
+      if (isLastLine || line.length <= 1) {
+        // Última línea o palabra única: espaciado natural a la izquierda
+        let xOffset = leftX;
+        for (const w of line) {
+          page.drawText(w.text, {
+            x: xOffset,
+            y: currentY + w.yOffset,
+            size: w.size,
+            font: w.font,
+            color: w.color
+          });
+          xOffset += w.width + w.font.widthOfTextAtSize(' ', w.size);
+        }
+      } else {
+        // Línea intermedia: Justificado tipográfico proporcional
+        const totalWordsWidth = line.reduce((sum, w) => sum + w.width, 0);
+        const spaceWidth = (maxWidth - totalWordsWidth) / (line.length - 1);
+
+        let xOffset = leftX;
+        for (const w of line) {
+          page.drawText(w.text, {
+            x: xOffset,
+            y: currentY + w.yOffset,
+            size: w.size,
+            font: w.font,
+            color: w.color
+          });
+          xOffset += w.width + spaceWidth;
+        }
+      }
+      currentY -= lineHeight;
+    }
+    return currentY;
   }
 
   /**
@@ -174,7 +238,7 @@ class CertificatePdfBuilder {
         });
       }
 
-      // Timbre Oficial Grande y Definido
+      // Timbre Oficial Grande
       if (assetsObj.stamp_seal) {
         const stampB64 = assetsObj.stamp_seal.split(',')[1];
         const stampBytes = Uint8Array.from(atob(stampB64), c => c.charCodeAt(0));
@@ -187,7 +251,7 @@ class CertificatePdfBuilder {
         });
       }
 
-      // Firma Oficial Ramón Briceño GRANDE e Imponente sobre la línea
+      // Firma Oficial Ramón Briceño Grande
       if (assetsObj.signature) {
         const sigB64 = assetsObj.signature.split(',')[1];
         const sigBytes = Uint8Array.from(atob(sigB64), c => c.charCodeAt(0));
@@ -232,11 +296,11 @@ class CertificatePdfBuilder {
       color: rgb(0, 0, 0)
     });
 
-    // 5. Cuerpo del Certificado (Dinámico)
+    // 5. Renderizado de Párrafo Justificado
     const leftX = 80;
     const maxContentWidth = 475;
-    let currentY = 472;
-    const lineHeight = 20.5;
+    const startY = 472;
+    const lineHeight = 21.5;
 
     const studentName = certData.studentName || 'Nombre del Participante';
     const studentRut = certData.studentRut || '12.345.678-9';
@@ -248,106 +312,68 @@ class CertificatePdfBuilder {
     const issueDateText = this.formatIssueDate(certData.issueDate || new Date());
     const companyName = (certData.companyName || '').trim();
     const companyRut = (certData.companyRut || '').trim();
-    const legalNorm = certData.legalNorm || 'Ley Nº 21.659 - Art.46 y Decreto 209 que aprueba Reglamento de Seguridad Privada';
+    const legalNorm = certData.legalNorm || 'Ley Nº 21.659 sobre Seguridad Privada y el Art.113 del Reglamento contenido en el Dº209 de la Subsecretaría de Prevención del Delito - S.P.D.';
     let locationText = (certData.locationText || '').trim();
     if (locationText.endsWith('.')) {
       locationText = locationText.slice(0, -1);
     }
 
-    // Si viene con empresa (ej: TRANSPORTES TRANSRUT LIMITADA)
+    const tokens = [];
+
     if (companyName) {
-      page.drawText('La ACADEMIA BRISEIN LTDA., procede a CERTIFICAR, que el funcionario', {
-        x: leftX, y: currentY, size: 11.5, font: timesItalic
-      });
-      currentY -= lineHeight;
-      page.drawText(`de la empresa ${companyName.toUpperCase()}${companyRut ? ', RUT ' + companyRut : ''},`, {
-        x: leftX, y: currentY, size: 11.5, font: timesBoldItalic
-      });
-      currentY -= lineHeight;
-      
-      const donPrefix = 'don(a) ';
-      page.drawText(donPrefix, { x: leftX, y: currentY, size: 11.5, font: timesItalic });
-      let xOffset = leftX + timesItalic.widthOfTextAtSize(donPrefix, 11.5) + 3;
-      
+      tokens.push(
+        { text: 'La ACADEMIA BRISEIN LTDA., procede a CERTIFICAR, que el funcionario de la empresa', font: timesItalic, size: 11.5 },
+        { text: `${companyName.toUpperCase()}${companyRut ? ', RUT ' + companyRut : ''},`, font: timesBoldItalic, size: 11.5 },
+        { text: 'don(a)', font: timesItalic, size: 11.5 }
+      );
       if (scriptFont) {
-        page.drawText(`${studentName},`, { x: xOffset, y: currentY - 2, size: 16, font: scriptFont });
-        xOffset += scriptFont.widthOfTextAtSize(`${studentName},`, 16) + 6;
+        tokens.push({ text: `${studentName},`, font: scriptFont, size: 16, yOffset: -2 });
       } else {
-        page.drawText(`${studentName},`, { x: xOffset, y: currentY, size: 12.5, font: timesBoldItalic });
-        xOffset += timesBoldItalic.widthOfTextAtSize(`${studentName},`, 12.5) + 6;
+        tokens.push({ text: `${studentName},`, font: timesBoldItalic, size: 12.5 });
       }
-      
-      const rutSuffix = `RUT ${studentRut}, realizó el curso sobre`;
-      if (xOffset + timesItalic.widthOfTextAtSize(rutSuffix, 11.5) <= leftX + maxContentWidth) {
-        page.drawText(rutSuffix, { x: xOffset, y: currentY, size: 11.5, font: timesItalic });
-      } else {
-        currentY -= lineHeight;
-        page.drawText(rutSuffix, { x: leftX, y: currentY, size: 11.5, font: timesItalic });
-      }
+      tokens.push(
+        { text: `RUT: ${studentRut}, realizó el curso sobre`, font: timesItalic, size: 11.5 },
+        { text: `“${courseName}”,`, font: timesBoldItalic, size: 12 },
+        { text: `conforme a la ${legalNorm},`, font: timesItalic, size: 11.5 },
+        { text: `entre ${startDateText} y ${endDateText}, con una duración de`, font: timesItalic, size: 11.5 },
+        { text: `${hours} horas cronológicas${locationText ? ', ' + locationText : ''}.`, font: timesItalic, size: 11.5 }
+      );
     } else {
-      // Formato estándar
-      const prefix1 = 'Por cuanto    don(a) ';
-      page.drawText(prefix1, { x: leftX, y: currentY, size: 12, font: timesItalic });
-      let xOffset = leftX + timesItalic.widthOfTextAtSize(prefix1, 12) + 6;
-
+      tokens.push(
+        { text: 'Por cuanto don(a)', font: timesItalic, size: 12 }
+      );
       if (scriptFont) {
-        page.drawText(`${studentName},`, { x: xOffset, y: currentY - 2, size: 18, font: scriptFont });
-        xOffset += scriptFont.widthOfTextAtSize(`${studentName},`, 18) + 8;
+        tokens.push({ text: `${studentName},`, font: scriptFont, size: 18, yOffset: -2 });
       } else {
-        page.drawText(`${studentName},`, { x: xOffset, y: currentY, size: 14, font: timesBoldItalic });
-        xOffset += timesBoldItalic.widthOfTextAtSize(`${studentName},`, 14) + 8;
+        tokens.push({ text: `${studentName},`, font: timesBoldItalic, size: 13.5 });
       }
-
-      page.drawText('Rut: ', { x: xOffset, y: currentY, size: 12, font: timesItalic });
-      xOffset += timesItalic.widthOfTextAtSize('Rut: ', 12) + 4;
-
-      page.drawText(`${studentRut}, `, { x: xOffset, y: currentY, size: 12.5, font: timesBold });
-      xOffset += timesBold.widthOfTextAtSize(`${studentRut}, `, 12.5) + 4;
-
-      page.drawText('ha', { x: xOffset, y: currentY, size: 12, font: timesItalic });
-      currentY -= lineHeight;
-      page.drawText('dado cumplimiento a los requisitos impuestos en la normativa para el curso', {
-        x: leftX, y: currentY, size: 12, font: timesItalic
-      });
+      tokens.push(
+        { text: 'Rut:', font: timesItalic, size: 12 },
+        { text: `${studentRut},`, font: timesBold, size: 12.5 },
+        { text: 'ha dado cumplimiento a los requisitos impuestos en la normativa para el curso', font: timesItalic, size: 12 },
+        { text: `“${courseName}”,`, font: timesBoldItalic, size: 12 },
+        { text: `conforme a la ${legalNorm},`, font: timesItalic, size: 11.5 },
+        { text: `entre ${startDateText} y ${endDateText}, con una duración de`, font: timesItalic, size: 11.5 },
+        { text: `${hours} horas cronológicas${locationText ? ', ' + locationText : ''}.`, font: timesItalic, size: 11.5 }
+      );
     }
 
-    // Nombre del Curso
-    currentY -= lineHeight;
-    const courseLines = this.wrapWords(`“${courseName}”,`, timesBoldItalic, 12, maxContentWidth);
-    for (const cLine of courseLines) {
-      page.drawText(cLine, { x: leftX, y: currentY, size: 12, font: timesBoldItalic });
-      currentY -= (lineHeight * 0.95);
-    }
-
-    // Normativa / Artículos y Decretos
-    const legalIntro = `conforme a la ${legalNorm}`;
-    const legalLines = this.wrapWords(legalIntro, timesItalic, 11.5, maxContentWidth);
-    for (const line of legalLines) {
-      page.drawText(line, { x: leftX, y: currentY, size: 11.5, font: timesItalic });
-      currentY -= (lineHeight * 0.95);
-    }
-
-    // Fechas, Duración y Lugar (Envoltorio inteligente)
-    const datesAndDuration = `entre ${startDateText} y ${endDateText}, con una duración de ${hours} horas cronológicas${locationText ? ', ' + locationText : ''}.`;
-    const durLines = this.wrapWords(datesAndDuration, timesItalic, 11.5, maxContentWidth);
-    for (const dLine of durLines) {
-      page.drawText(dLine, { x: leftX, y: currentY, size: 11.5, font: timesItalic });
-      currentY -= (lineHeight * 0.95);
-    }
+    // Renderizar Párrafo Justificado
+    let endY = this.renderJustifiedTokens(page, tokens, leftX, startY, lineHeight, maxContentWidth);
 
     // Código SENCE
-    currentY -= (lineHeight * 1.2);
+    endY -= (lineHeight * 0.8);
     page.drawText(`Cº SENCE : ${codeSence}`, {
-      x: leftX, y: currentY, size: 12.5, font: timesBold
+      x: leftX, y: endY, size: 12.5, font: timesBold
     });
 
     // Fecha de Emisión
-    currentY -= (lineHeight * 1.3);
+    endY -= (lineHeight * 1.2);
     page.drawText(issueDateText, {
-      x: leftX, y: currentY, size: 11.5, font: timesItalic
+      x: leftX, y: endY, size: 11.5, font: timesItalic
     });
 
-    // 6. Pie de Firma y Cargo (Línea elegante centrada)
+    // 6. Pie de Firma y Cargo (Línea elegante)
     const sigLineStartX = 285;
     const sigLineWidth = 190;
     page.drawLine({

@@ -10,7 +10,7 @@ const COURSES_CATALOG = [
     hoursPracticas: 0,
     hoursElearning: 0,
     modalidad: "Presencial",
-    normativa: "Ley Nº 21.659 sobre Seguridad Privada y el Art.113 del Reglamento contenido en el Dº209 de la Subsecretaría de Prevención del Delito S.P.D.",
+    normativa: "Ley Nº 21.659 sobre Seguridad Privada y el Art.113 del Reglamento contenido en el Dº209 de la Subsecretaría de Prevención del Delito - S.P.D.",
     url: "https://eligemejor.sence.cl/BuscarCursoNuevo/DetalleCurso?curso=1237904085"
   },
   {
