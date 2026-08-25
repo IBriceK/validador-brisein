@@ -30,7 +30,6 @@
   
   <!-- PDF Libs para descarga instantánea -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-  <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
   
   <script src="js/assets-data.js"></script>
@@ -90,7 +89,7 @@
       <div class="max-w-md mx-auto bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider text-left">Consultar por RUT del Alumno:</label>
         <div class="flex gap-2">
-          <input type="text" id="input-rut-search" placeholder="Ej: 16.554.993-7" class="flex-1 px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-red-500 focus:outline-none shadow-sm">
+          <input type="text" id="input-rut-search" placeholder="Ej: 23.801.671-1" class="flex-1 px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-red-500 focus:outline-none shadow-sm">
           <button id="btn-search-rut" class="px-6 py-3 bg-brisein-red hover:bg-brisein-darkRed text-white text-sm font-bold rounded-xl transition shadow flex items-center space-x-1.5">
             <i class="fa-solid fa-magnifying-glass"></i>
             <span>Verificar</span>
@@ -244,12 +243,42 @@
       const urlParams = new URLSearchParams(window.location.search);
       let certData = null;
 
-      // 1. Verificar si viene en formato payload comprimido en ?c= (desde el QR)
+      // 1. Verificar si viene en formato payload comprimido en ?c=
       const payload = urlParams.get('c');
       if (payload) {
         try {
           const jsonStr = decodeURIComponent(escape(atob(payload)));
-          certData = JSON.parse(jsonStr);
+          const parsed = JSON.parse(jsonStr);
+
+          // Si viene en tupla compacta: [rut, name, codeSence, startDate, endDate, issueDate, companyName, companyRut]
+          if (Array.isArray(parsed)) {
+            const courseFound = (typeof COURSES_CATALOG !== 'undefined') ? 
+              COURSES_CATALOG.find(c => c.codeSence === parsed[2] || c.codeSenceFormatted === parsed[2]) : null;
+
+            certData = {
+              studentRut: parsed[0] || '',
+              cleanRut: (parsed[0] || '').replace(/[^0-9kK]/g, ''),
+              studentName: parsed[1] || '',
+              codeSence: parsed[2] || '',
+              startDate: parsed[3] || '',
+              endDate: parsed[4] || '',
+              issueDate: parsed[5] || '',
+              companyName: parsed[6] || '',
+              companyRut: parsed[7] || '',
+              courseName: courseFound ? courseFound.name : 'Curso de Capacitación y Seguridad Privada',
+              hours: courseFound ? courseFound.hours : 60,
+              legalNorm: courseFound ? courseFound.normativa : 'Ley Nº 21.659 sobre Seguridad Privada'
+            };
+          } else if (typeof parsed === 'object') {
+            certData = parsed;
+            if (!certData.courseName && certData.codeSence && typeof COURSES_CATALOG !== 'undefined') {
+              const c = COURSES_CATALOG.find(x => x.codeSence === certData.codeSence);
+              if (c) {
+                certData.courseName = c.name;
+                certData.hours = c.hours;
+              }
+            }
+          }
         } catch (e) {
           console.warn('Error decodificando payload ?c=', e);
         }
@@ -257,23 +286,26 @@
 
       // 2. Si viene con parámetros directos (?rut=...&nombre=...&curso=...)
       if (!certData) {
-        const rut = urlParams.get('rut') || urlParams.get('id');
+        const rut = urlParams.get('rut') || urlParams.get('id') || urlParams.get('r');
         const nombre = urlParams.get('nombre') || urlParams.get('n');
         const curso = urlParams.get('curso');
-        const sence = urlParams.get('sence');
-        const horas = urlParams.get('horas');
-        const inicio = urlParams.get('inicio');
-        const termino = urlParams.get('termino');
-        const emision = urlParams.get('emision');
+        const sence = urlParams.get('sence') || urlParams.get('c');
+        const horas = urlParams.get('horas') || urlParams.get('h');
+        const inicio = urlParams.get('inicio') || urlParams.get('i');
+        const termino = urlParams.get('termino') || urlParams.get('t');
+        const emision = urlParams.get('emision') || urlParams.get('e');
 
-        if (rut && nombre && curso) {
+        if (rut && (nombre || sence)) {
+          const cFound = (sence && typeof COURSES_CATALOG !== 'undefined') ? 
+            COURSES_CATALOG.find(c => c.codeSence === sence || c.codeSenceFormatted === sence) : null;
+
           certData = {
-            studentName: decodeURIComponent(nombre),
+            studentName: nombre ? decodeURIComponent(nombre) : 'Participante Acreditado',
             studentRut: decodeURIComponent(rut),
             cleanRut: rut.replace(/[^0-9kK]/g, ''),
-            courseName: decodeURIComponent(curso),
+            courseName: curso ? decodeURIComponent(curso) : (cFound ? cFound.name : 'Curso de Capacitación'),
             codeSence: sence ? decodeURIComponent(sence) : '1238044236',
-            hours: horas ? parseInt(horas, 10) : 40,
+            hours: horas ? parseInt(horas, 10) : (cFound ? cFound.hours : 40),
             startDate: inicio ? decodeURIComponent(inicio) : '',
             endDate: termino ? decodeURIComponent(termino) : '',
             issueDate: emision ? decodeURIComponent(emision) : ''
@@ -282,10 +314,9 @@
       }
 
       // 3. Si se escaneó un QR o se pasó un certificado, mostrar la tarjeta de verificación
-      if (certData && certData.studentName && certData.courseName) {
+      if (certData && certData.studentName && (certData.courseName || certData.codeSence)) {
         showVerification(certData);
       } else {
-        // Si no viene nada en la URL, mostrar el portal de búsqueda limpio
         showHome();
       }
 
@@ -364,7 +395,7 @@
 
       document.getElementById('out-name').textContent = cert.studentName;
       document.getElementById('out-rut').textContent = cert.studentRut;
-      document.getElementById('out-course').textContent = `“${cert.courseName.toUpperCase()}”`;
+      document.getElementById('out-course').textContent = `“${(cert.courseName || '').toUpperCase()}”`;
       
       const issueFormatted = CertificatePdfBuilder.formatIssueDate(cert.issueDate || cert.endDate || new Date())
                               .replace('En Santiago de Chile, a ', '')
