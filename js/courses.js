@@ -1,6 +1,19 @@
 // Catálogo Oficial de Cursos SENCE - Academia BRISEIN LTDA.
 const COURSES_CATALOG = [
   {
+    id: "1237904085",
+    name: "TÉCNICAS EN SEGURIDAD PRIVADA A MANIPULADORES DE CAJEROS AUTOMÁTICOS",
+    codeSence: "1237904085",
+    codeSenceFormatted: "12-37-9040-85",
+    hours: 60,
+    hoursTeoricas: 0,
+    hoursPracticas: 0,
+    hoursElearning: 0,
+    modalidad: "Presencial",
+    normativa: "Ley Nº 21.659 sobre Seguridad Privada y el Art.113 del Reglamento contenido en el Dº209 de la Subsecretaría de Prevención del Delito S.P.D.",
+    url: "https://eligemejor.sence.cl/BuscarCursoNuevo/DetalleCurso?curso=1237904085"
+  },
+  {
     id: "1238044236",
     name: "PERFECCIONAMIENTO DE VIGILANTES PRIVADOS",
     codeSence: "1238044236",
