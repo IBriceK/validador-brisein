@@ -100,7 +100,7 @@ class CertificatePdfBuilder {
     // Fuente caligráfica para el nombre
     let scriptFont = null;
     try {
-      const assetsObj = (typeof ASSETS_DATA !== 'undefined') ? ASSETS_DATA : (typeof global !== 'undefined' && global.ASSETS_DATA ? global.ASSETS_DATA : null);
+      const assetsObj = (typeof window !== 'undefined' && window.ASSETS_DATA) ? window.ASSETS_DATA : (typeof globalThis !== 'undefined' && globalThis.ASSETS_DATA ? globalThis.ASSETS_DATA : (typeof ASSETS_DATA !== 'undefined' ? ASSETS_DATA : null));
       if (assetsObj && assetsObj.font_script && fontkitLib) {
         const fontB64 = assetsObj.font_script.split(',')[1];
         const fontBytes = Uint8Array.from(atob(fontB64), c => c.charCodeAt(0));
@@ -145,7 +145,7 @@ class CertificatePdfBuilder {
     }
 
     // 3. Imágenes de Assets (Escudo, Marca de agua, Timbre Grande, Firma Grande)
-    const assetsObj = (typeof ASSETS_DATA !== 'undefined') ? ASSETS_DATA : (typeof global !== 'undefined' && global.ASSETS_DATA ? global.ASSETS_DATA : null);
+    const assetsObj = (typeof window !== 'undefined' && window.ASSETS_DATA) ? window.ASSETS_DATA : (typeof globalThis !== 'undefined' && globalThis.ASSETS_DATA ? globalThis.ASSETS_DATA : (typeof ASSETS_DATA !== 'undefined' ? ASSETS_DATA : null));
     if (assetsObj) {
       if (assetsObj.logo_shield) {
         const shieldB64 = assetsObj.logo_shield.split(',')[1];
@@ -174,7 +174,7 @@ class CertificatePdfBuilder {
         });
       }
 
-      // Timbre Oficial (Agrandado para presencia destacada)
+      // Timbre Oficial Agrandado
       if (assetsObj.stamp_seal) {
         const stampB64 = assetsObj.stamp_seal.split(',')[1];
         const stampBytes = Uint8Array.from(atob(stampB64), c => c.charCodeAt(0));
@@ -187,7 +187,7 @@ class CertificatePdfBuilder {
         });
       }
 
-      // Firma Oficial Ramón Briceño (Agrandada con proporción elegante)
+      // Firma Oficial Ramón Briceño Agrandada
       if (assetsObj.signature) {
         const sigB64 = assetsObj.signature.split(',')[1];
         const sigBytes = Uint8Array.from(atob(sigB64), c => c.charCodeAt(0));
@@ -235,7 +235,7 @@ class CertificatePdfBuilder {
     // 5. Cuerpo del Certificado (Dinámico)
     const leftX = 80;
     const maxContentWidth = 475;
-    let currentY = 470;
+    let currentY = 472;
     const lineHeight = 20.5;
 
     const studentName = certData.studentName || 'Nombre del Participante';
@@ -267,16 +267,23 @@ class CertificatePdfBuilder {
       
       const donPrefix = 'don(a) ';
       page.drawText(donPrefix, { x: leftX, y: currentY, size: 11.5, font: timesItalic });
-      let xOffset = leftX + timesItalic.widthOfTextAtSize(donPrefix, 11.5) + 4;
+      let xOffset = leftX + timesItalic.widthOfTextAtSize(donPrefix, 11.5) + 3;
       
       if (scriptFont) {
-        page.drawText(`${studentName},`, { x: xOffset, y: currentY - 2, size: 17, font: scriptFont });
-        xOffset += scriptFont.widthOfTextAtSize(`${studentName},`, 17) + 6;
+        page.drawText(`${studentName},`, { x: xOffset, y: currentY - 2, size: 16, font: scriptFont });
+        xOffset += scriptFont.widthOfTextAtSize(`${studentName},`, 16) + 6;
       } else {
-        page.drawText(`${studentName},`, { x: xOffset, y: currentY, size: 13.5, font: timesBoldItalic });
-        xOffset += timesBoldItalic.widthOfTextAtSize(`${studentName},`, 13.5) + 6;
+        page.drawText(`${studentName},`, { x: xOffset, y: currentY, size: 12.5, font: timesBoldItalic });
+        xOffset += timesBoldItalic.widthOfTextAtSize(`${studentName},`, 12.5) + 6;
       }
-      page.drawText(`RUT: ${studentRut}, realizó el curso sobre`, { x: xOffset, y: currentY, size: 11.5, font: timesItalic });
+      
+      const rutSuffix = `RUT ${studentRut}, realizó el curso sobre`;
+      if (xOffset + timesItalic.widthOfTextAtSize(rutSuffix, 11.5) <= leftX + maxContentWidth) {
+        page.drawText(rutSuffix, { x: xOffset, y: currentY, size: 11.5, font: timesItalic });
+      } else {
+        currentY -= lineHeight;
+        page.drawText(rutSuffix, { x: leftX, y: currentY, size: 11.5, font: timesItalic });
+      }
     } else {
       // Formato estándar
       const prefix1 = 'Por cuanto    don(a) ';
