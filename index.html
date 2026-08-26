@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Generador de Certificados | Academia BRISEIN</title>
+  <title>Verificación Oficial de Certificados | Academia BRISEIN</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -14,498 +14,404 @@
           colors: {
             brisein: {
               red: '#D90D0D',
-              darkRed: '#B30B0B',
+              darkRed: '#A30808',
               navy: '#0F172A',
-              slate: '#1E293B',
-              accent: '#2563EB'
+              slate: '#1E293B'
             }
           }
         }
       }
     }
   </script>
-
-  <!-- Google Fonts & FontAwesome -->
+  
+  <!-- FontAwesome & Google Fonts -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Parisienne&display=swap" rel="stylesheet">
-
-  <!-- Core Libraries for Client-side PDF & Image Processing -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script>
-    if (window.pdfjsLib) {
-      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    }
-  </script>
+  
+  <!-- PDF Libs para descarga instantánea -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-  <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
-  <script src="js/html2canvas.min.js"></script>
-
-  <!-- Application Modules -->
+  
   <script src="js/assets-data.js"></script>
   <script src="js/courses.js"></script>
-  <script src="js/otic-parser.js"></script>
   <script src="js/pdf-builder.js"></script>
 
   <style>
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: #0F172A;
+      background-color: #F8FAFC;
     }
-    .cert-font-title {
-      font-family: 'Playfair Display', serif;
-    }
-    .cert-font-script {
-      font-family: 'Parisienne', cursive;
-    }
-    .certificate-sheet {
-      aspect-ratio: 1 / 1.4142;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
-    }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: #1E293B;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #475569;
-      border-radius: 3px;
+    .watermark-bg {
+      background-image: radial-gradient(#CBD5E1 1px, transparent 1px);
+      background-size: 20px 20px;
     }
   </style>
 </head>
-<body class="min-h-screen text-slate-100 flex flex-col justify-between">
+<body class="min-h-screen text-slate-800 flex flex-col justify-between watermark-bg">
 
-  <!-- Barra Superior de Navegación -->
-  <header class="bg-slate-900/90 border-b border-slate-800 backdrop-blur sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
-      
-      <!-- Marca y Título -->
-      <div class="flex items-center space-x-3.5">
-        <div class="w-10 h-12 bg-white rounded-lg p-0.5 shadow-md flex items-center justify-center">
-          <img id="nav-logo-shield" src="assets/logo_shield.png" alt="BRISEIN" class="h-full object-contain">
+  <!-- Encabezado Superior -->
+  <header class="bg-slate-900 text-white shadow-lg border-b border-slate-800">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-12 bg-white rounded flex items-center justify-center p-0.5 shadow">
+          <img src="assets/logo_shield.png" alt="Brisein" class="h-full object-contain">
         </div>
         <div>
-          <div class="flex items-center space-x-2">
-            <h1 class="text-base sm:text-lg font-bold tracking-wide text-white">ACADEMIA BRISEIN LTDA.</h1>
-            <span class="px-2 py-0.5 bg-red-600/20 text-red-400 text-[10px] font-bold rounded-full border border-red-500/30">Privado</span>
-          </div>
-          <p class="text-xs text-slate-400">Generador de Certificados Oficiales</p>
+          <h1 class="text-lg font-bold tracking-wide uppercase leading-tight">ACADEMIA BRISEIN</h1>
+          <p class="text-xs text-slate-400 font-medium">Portal Oficial de Validación y Verificación</p>
         </div>
       </div>
-
-      <!-- Accesos Rápidos -->
-      <div class="flex items-center space-x-3">
-        <a href="https://valida.empresasbrisein.com" target="_blank" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold rounded-lg border border-slate-700 transition flex items-center space-x-1.5 shadow-sm">
-          <i class="fa-solid fa-qrcode text-emerald-400"></i>
-          <span class="hidden sm:inline">Portal</span> Validador QR
-        </a>
-        <button id="btn-show-settings" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition" title="Configuración de URLs y Firmas">
-          <i class="fa-solid fa-gear text-base"></i>
-        </button>
+      <div class="flex items-center space-x-2 bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 text-xs px-3 py-1.5 rounded-full font-medium shadow-inner">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Sistema de Autenticación Activo</span>
       </div>
-
     </div>
   </header>
 
-  <!-- Panel Principal en 2 Columnas -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <!-- Contenido Principal -->
+  <main class="max-w-4xl mx-auto px-4 py-8 flex-1 w-full">
     
-    <!-- Columna Izquierda: Controles y Carga (7 cols) -->
-    <div class="lg:col-span-7 space-y-6">
+    <!-- VISTA 1: VISTA INICIAL (Cuando se entra a la web sin escanear QR) -->
+    <div id="home-view" class="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 sm:p-12 text-center space-y-8">
       
-      <!-- Pestañas de Modo (OTIC vs Manual) -->
-      <div class="bg-slate-900 p-1.5 rounded-2xl border border-slate-800 flex shadow-lg">
-        <button id="tab-mode-otic" class="flex-1 py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center space-x-2 transition-all duration-200 bg-brisein-red text-white shadow-md">
-          <i class="fa-solid fa-file-pdf text-base"></i>
-          <span>1. Deslizar PDF de OTIC</span>
-        </button>
-        <button id="tab-mode-manual" class="flex-1 py-3 px-4 rounded-xl text-sm font-semibold flex items-center justify-center space-x-2 transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800/60">
-          <i class="fa-solid fa-keyboard text-base"></i>
-          <span>2. Ingreso Manual</span>
-        </button>
+      <div class="w-20 h-20 bg-red-50 text-brisein-red rounded-3xl mx-auto flex items-center justify-center shadow-inner">
+        <i class="fa-solid fa-qrcode text-4xl"></i>
       </div>
 
-      <!-- SECCIÓN MODO 1: Carga y Parsing de PDF OTIC -->
-      <div id="section-otic" class="space-y-4">
-        
-        <!-- Zona Drag & Drop -->
-        <div id="drop-zone" class="border-2 border-dashed border-slate-700 hover:border-red-500/80 bg-slate-900/60 hover:bg-slate-900 rounded-2xl p-8 text-center transition-all cursor-pointer group shadow-md relative overflow-hidden">
-          <input type="file" id="file-input-otic" accept=".pdf" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10">
-          
-          <div class="w-16 h-16 bg-red-600/10 text-red-500 rounded-2xl mx-auto flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-            <i class="fa-solid fa-cloud-arrow-up text-3xl"></i>
-          </div>
-          
-          <h3 class="text-base font-bold text-white group-hover:text-red-400 transition-colors">
-            Arrastra aquí el PDF de la Orden de Compra OTIC
-          </h3>
-          <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">
-            Detecta automáticamente el Curso, Código SENCE, Horas, Fechas y toda la Lista de Alumnos con sus RUTs.
-          </p>
-          <div class="mt-4 inline-flex items-center space-x-2 px-3 py-1.5 bg-slate-800 group-hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-700 transition">
-            <i class="fa-solid fa-folder-open text-red-400"></i>
-            <span>O haz clic para buscar el archivo</span>
-          </div>
-        </div>
+      <div class="max-w-xl mx-auto space-y-2">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Verificación Digital de Certificados</h2>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          Consulta y valida la autenticidad de los certificados emitidos por <strong>Academia BRISEIN LTDA.</strong> acreditados bajo la norma <strong>NCh 2728:2015</strong>.
+        </p>
+      </div>
 
-        <!-- Indicador de Archivo Cargado -->
-        <div id="otic-file-status" class="hidden bg-emerald-950/60 border border-emerald-500/40 p-4 rounded-xl flex items-center justify-between text-xs text-emerald-300">
-          <div class="flex items-center space-x-3">
-            <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
-            <div>
-              <span class="font-bold text-white block" id="loaded-file-name">archivo.pdf</span>
-              <span id="loaded-file-info">Alumnos detectados</span>
-            </div>
-          </div>
-          <button id="btn-clear-otic" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 transition">
-            Cambiar PDF / Limpiar
+      <!-- Buscador por RUT -->
+      <div class="max-w-md mx-auto bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider text-left">Consultar por RUT del Alumno:</label>
+        <div class="flex gap-2">
+          <input type="text" id="input-rut-search" placeholder="Ej: 23.801.671-1" class="flex-1 px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-red-500 focus:outline-none shadow-sm">
+          <button id="btn-search-rut" class="px-6 py-3 bg-brisein-red hover:bg-brisein-darkRed text-white text-sm font-bold rounded-xl transition shadow flex items-center space-x-1.5">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Verificar</span>
           </button>
         </div>
-
+        <p id="search-msg" class="text-xs text-slate-400 text-left">Ingresa el RUT con o sin puntos y guión.</p>
       </div>
 
-      <!-- SECCIÓN MODO 2: Formulario Manual -->
-      <div id="section-manual" class="hidden space-y-4 bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-md">
-        
-        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-          <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center">
-            <i class="fa-solid fa-sliders mr-2 text-red-500"></i> Configurar Curso y Alumnos
-          </h3>
-          <span class="text-xs text-slate-400">Catálogo Oficial SENCE</span>
+      <!-- Sellos y Respaldo Institucional -->
+      <div class="pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
+          <i class="fa-solid fa-award text-brisein-red text-xl mb-2"></i>
+          <h4 class="text-xs font-bold text-slate-900">OTEC Certificado</h4>
+          <p class="text-[11px] text-slate-500 mt-1">Norma Chilena NCh 2728:2015 por ICONTEC Internacional.</p>
         </div>
-
-        <!-- Selector de Curso del Catálogo -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Seleccionar Curso:</label>
-          <div class="relative">
-            <select id="select-course" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:ring-2 focus:ring-red-500 focus:outline-none appearance-none cursor-pointer">
-              <!-- Cursos inyectados dinámicamente -->
-            </select>
-            <div class="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none text-xs">
-              <i class="fa-solid fa-chevron-down"></i>
-            </div>
-          </div>
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
+          <i class="fa-solid fa-scale-balanced text-brisein-red text-xl mb-2"></i>
+          <h4 class="text-xs font-bold text-slate-900">Marco Legal Oficial</h4>
+          <p class="text-[11px] text-slate-500 mt-1">Cumplimiento Ley Nº 21.659 (Art. 46) y Decreto 209.</p>
         </div>
-
-        <!-- Pegado Rápido de Lista de Alumnos -->
-        <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="text-xs font-semibold text-slate-300">Pegar Lista de Alumnos (RUT y Nombre):</label>
-            <span class="text-[11px] text-slate-400">Ej: 23.801.671-1 Dorian Amadeo Espinoza Sánchez</span>
-          </div>
-          <textarea id="textarea-manual-students" rows="3" placeholder="Pega aquí una lista de alumnos (un alumno por línea)&#10;23.801.671-1 Dorian Amadeo Espinoza Sánchez&#10;11.291.086-7 Fernando Almuna Fuentes" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl p-3 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none font-mono placeholder:text-slate-600 custom-scrollbar"></textarea>
-          <div class="flex justify-end mt-2">
-            <button id="btn-parse-manual-text" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg border border-slate-700 transition flex items-center space-x-1.5">
-              <i class="fa-solid fa-plus text-emerald-400"></i>
-              <span>Cargar Alumnos a la Tabla</span>
-            </button>
-          </div>
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
+          <i class="fa-solid fa-shield-check text-brisein-red text-xl mb-2"></i>
+          <h4 class="text-xs font-bold text-slate-900">Firma Verificable</h4>
+          <p class="text-[11px] text-slate-500 mt-1">Autenticidad respaldada por código QR único e infalsificable.</p>
         </div>
-
-      </div>
-
-      <!-- DATOS DE LA ACTIVIDAD (Comunes y Editables) -->
-      <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-md space-y-4">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center">
-          <i class="fa-solid fa-graduation-cap mr-2 text-red-500"></i> Parámetros y Normativa del Certificado
-        </h3>
-
-        <!-- Nombre del Curso (Editable) -->
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Nombre del Curso a Certificar:</label>
-          <input type="text" id="input-course-name" placeholder="Ej: TÉCNICAS EN SEGURIDAD PRIVADA A MANIPULADORES DE CAJEROS AUTOMÁTICOS" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-red-500 focus:outline-none uppercase">
-        </div>
-
-        <!-- Marco Legal / Artículos y Decretos Específicos -->
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Marco Legal / Artículos y Decretos Aplicables:</label>
-          <textarea id="input-legal-norm" rows="2" placeholder="Ej: Ley Nº 21.659 sobre Seguridad Privada y el Art.113 del Reglamento contenido en el Dº209 de la Subsecretaría de Prevención del Delito - S.P.D." class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none font-medium custom-scrollbar"></textarea>
-        </div>
-
-        <!-- Empresa Mandante (Opcional) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-slate-800/80">
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Empresa Mandante (Opcional):</label>
-            <input type="text" id="input-company-name" placeholder="Ej: TRANSPORTES TRANSRUT LIMITADA" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none uppercase">
-          </div>
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 mb-1">RUT Empresa Mandante (Opcional):</label>
-            <input type="text" id="input-company-rut" placeholder="Ej: 76.388.840-1" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs font-mono focus:ring-2 focus:ring-red-500 focus:outline-none">
-          </div>
-        </div>
-
-        <!-- Fila de Código SENCE, Horas y Fechas -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Código SENCE:</label>
-            <input type="text" id="input-code-sence" placeholder="1237904085" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs font-mono focus:ring-2 focus:ring-red-500 focus:outline-none">
-          </div>
-
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Duración (Horas):</label>
-            <input type="number" id="input-hours" placeholder="60" min="1" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-red-500 focus:outline-none">
-          </div>
-
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Fecha de Inicio:</label>
-            <input type="text" id="input-start-date" placeholder="DD-MM-YYYY" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none">
-          </div>
-
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Fecha de Término:</label>
-            <input type="text" id="input-end-date" placeholder="DD-MM-YYYY" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none">
-          </div>
-
-        </div>
-
-        <!-- Lugar con Selector de Plantillas y Fecha de Emisión -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-slate-800/80">
-          
-          <!-- Lugar / Dependencias con Menú de Plantillas -->
-          <div class="space-y-1.5">
-            <div class="flex items-center justify-between">
-              <label class="block text-[11px] font-semibold text-slate-400">Lugar / Dependencias (Opcional):</label>
-            </div>
-            <select id="select-location-template" class="w-full bg-slate-950 border border-slate-700 text-slate-300 rounded-xl px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none cursor-pointer">
-              <option value="">-- Seleccionar Plantilla de Sede --</option>
-              <option value="en dependencias de nuestra academia, ubicada en calle Islandia Nº831 Comuna de SAN MIGUEL.">Sede San Miguel (calle Islandia Nº831)</option>
-              <option value="none">Sin sede (Vacío)</option>
-            </select>
-            <input type="text" id="input-location" placeholder="O escribe aquí una sede personalizada..." class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none">
-          </div>
-
-          <!-- Fecha de Emisión (Hoy por defecto) -->
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Fecha de Emisión (En Santiago de Chile, a...):</label>
-            <input type="text" id="input-issue-date" placeholder="DD-MM-YYYY" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs font-semibold text-emerald-400 focus:ring-2 focus:ring-red-500 focus:outline-none">
-            <p class="text-[10px] text-slate-500 mt-1">Viene con la fecha de hoy por defecto.</p>
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- TABLA DE ALUMNOS A GENERAR -->
-      <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-md overflow-hidden">
-        
-        <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
-          <div class="flex items-center space-x-2">
-            <h3 class="text-xs font-bold text-white uppercase tracking-wider">
-              <i class="fa-solid fa-users text-red-500 mr-1.5"></i> Alumnos a Certificar (<span id="students-count">0</span>)
-            </h3>
-          </div>
-          <div class="flex items-center space-x-2">
-            <button id="btn-add-single-student" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition flex items-center space-x-1">
-              <i class="fa-solid fa-user-plus text-emerald-400 text-[11px]"></i>
-              <span>Agregar Fila</span>
-            </button>
-            <button id="btn-clear-all-students" class="px-2.5 py-1 bg-slate-800 hover:bg-red-950 text-slate-400 hover:text-red-400 text-xs font-semibold rounded-lg border border-slate-700 transition" title="Vaciar toda la lista">
-              <span>Limpiar Todo</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="max-h-56 overflow-y-auto custom-scrollbar p-2">
-          <table class="w-full text-left text-xs text-slate-300">
-            <thead class="text-[11px] uppercase bg-slate-950/60 text-slate-400 sticky top-0">
-              <tr>
-                <th class="py-2 px-3">#</th>
-                <th class="py-2 px-3">RUT</th>
-                <th class="py-2 px-3">Nombre Completo del Alumno</th>
-                <th class="py-2 px-3 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="students-table-body" class="divide-y divide-slate-800/60">
-              <!-- Filas dinámicas -->
-            </tbody>
-          </table>
-        </div>
-
-      </div>
-
-      <!-- BOTONERA DE ACCIÓN Y GENERACIÓN MASIVA -->
-      <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-xl flex flex-wrap items-center justify-between gap-3">
-        
-        <div class="flex flex-wrap items-center gap-2">
-          <button id="btn-generate-all-zip" class="px-4 py-2.5 bg-brisein-red hover:bg-brisein-darkRed text-white font-bold rounded-xl shadow-lg hover:shadow-red-600/30 transition-all duration-200 flex items-center space-x-1.5 text-xs sm:text-sm">
-            <i class="fa-solid fa-file-zipper text-base"></i>
-            <span>Descargar Lote (ZIP)</span>
-          </button>
-          
-          <button id="btn-download-current-pdf" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-semibold rounded-xl border border-slate-700 transition text-xs sm:text-sm flex items-center space-x-1.5">
-            <i class="fa-solid fa-file-pdf text-red-400"></i>
-            <span>Descargar PDF</span>
-          </button>
-
-          <button id="btn-download-current-png" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-semibold rounded-xl border border-slate-700 transition text-xs sm:text-sm flex items-center space-x-1.5">
-            <i class="fa-solid fa-image text-emerald-400"></i>
-            <span>Descargar Foto (PNG)</span>
-          </button>
-        </div>
-
-        <button id="btn-print-current" class="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl border border-slate-700 transition text-xs flex items-center space-x-1.5" title="Imprimir certificado actual">
-          <i class="fa-solid fa-print"></i>
-          <span class="hidden sm:inline">Imprimir</span>
-        </button>
-
       </div>
 
     </div>
 
-    <!-- Columna Derecha: Previsualización en Vivo (5 cols) -->
-    <div class="lg:col-span-5 space-y-4">
+    <!-- VISTA 2: TARJETA DE RESULTADO DE CERTIFICADO VERIFICADO (Cuando se escanea el QR) -->
+    <div id="valid-card" class="hidden bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
       
-      <!-- Barra de Estado de Previsualización -->
-      <div class="bg-slate-900 px-4 py-3 rounded-2xl border border-slate-800 flex items-center justify-between shadow-md">
-        <div class="flex items-center space-x-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <h2 class="text-xs font-bold text-white uppercase tracking-wider">Vista Previa en Vivo</h2>
+      <!-- Banner de Estado Verde -->
+      <div class="bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 px-6 py-6 text-white text-center relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 opacity-10 text-white text-9xl font-black">
+          <i class="fa-solid fa-certificate"></i>
         </div>
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-white text-emerald-600 rounded-full shadow-lg mb-3">
+          <i class="fa-solid fa-circle-check text-3xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold tracking-tight">CERTIFICADO AUTÉNTICO Y VÁLIDO</h2>
+        <p class="text-emerald-100 text-sm mt-1 font-medium">Verificación Digital Oficial de Acreditación</p>
+      </div>
+
+      <div class="p-6 md:p-10 space-y-8">
         
-        <!-- Paginador de Alumno Seleccionado -->
-        <div class="flex items-center space-x-2 text-xs">
-          <button id="btn-prev-student" class="w-7 h-7 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center text-slate-300 transition" title="Alumno anterior">
-            <i class="fa-solid fa-chevron-left text-[10px]"></i>
-          </button>
-          <span id="preview-index-label" class="text-slate-400 text-[11px] font-mono">0 / 0</span>
-          <button id="btn-next-student" class="w-7 h-7 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center text-slate-300 transition" title="Siguiente alumno">
-            <i class="fa-solid fa-chevron-right text-[10px]"></i>
-          </button>
+        <!-- Frase Oficial de Certificación -->
+        <div class="bg-slate-50 border-l-4 border-brisein-red p-6 rounded-r-xl shadow-sm">
+          <p class="text-xs font-bold text-brisein-red tracking-wider uppercase mb-2 flex items-center">
+            <i class="fa-solid fa-shield-halved mr-2"></i> Declaración Oficial de Conformidad
+          </p>
+          <p class="text-lg md:text-xl text-slate-800 leading-relaxed font-serif italic" id="cert-statement">
+            "Nosotros <strong class="text-slate-900 not-italic font-bold font-sans">BRISEIN</strong> Certificamos que <strong id="out-name" class="text-slate-950 font-bold not-italic font-sans underline decoration-red-500/50 decoration-2">[Nombre Alumno]</strong> (RUT: <strong id="out-rut" class="text-slate-950 not-italic font-sans font-bold">[RUT]</strong>) cuenta con el certificado de <strong id="out-course" class="text-slate-950 not-italic font-bold font-sans uppercase">“[Nombre Curso]”</strong> a la fecha de <strong id="out-issue" class="text-slate-950 not-italic font-sans font-bold">[Fecha Emisión]</strong>."
+          </p>
         </div>
-      </div>
 
-      <!-- Hoja de Certificado Digital (Canvas / HTML Renderer) -->
-      <div class="bg-slate-950 p-2 sm:p-4 rounded-2xl border border-slate-800 flex items-center justify-center shadow-2xl">
-        <div id="certificate-preview-container" class="w-full max-w-[460px] bg-white text-slate-900 certificate-sheet rounded-md relative overflow-hidden p-4 sm:p-6 flex flex-col justify-between select-none transition-all">
+        <!-- Ficha Técnica de Detalles -->
+        <div>
+          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center">
+            <i class="fa-solid fa-circle-info mr-2 text-slate-500"></i> Datos Registrados del Certificado
+          </h3>
           
-          <!-- Barra Roja Izquierda -->
-          <div class="absolute left-3.5 sm:left-5 top-5 bottom-5 w-2 sm:w-3 bg-[#D90D0D]"></div>
-
-          <!-- Encabezado con QR y Escudo -->
-          <div class="relative z-10 flex flex-col items-center">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             
-            <!-- QR superior izquierdo -->
-            <div class="absolute left-6 sm:left-9 top-0 w-12 h-12 sm:w-16 sm:h-16 bg-white p-0.5 shadow-sm border border-slate-200 flex items-center justify-center">
-              <canvas id="qr-canvas-preview" class="w-full h-full"></canvas>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <span class="text-xs font-semibold text-slate-500 uppercase block">Participante Acreditado</span>
+              <span class="text-base font-bold text-slate-900 block mt-1" id="det-name">--</span>
+              <span class="text-xs text-slate-600 font-mono" id="det-rut">RUT: --</span>
             </div>
 
-            <!-- Escudo BRISEIN Superior -->
-            <div class="w-16 h-20 sm:w-20 sm:h-24 mx-auto mb-1">
-              <img id="prev-logo-shield" src="assets/logo_shield.png" alt="BRISEIN" class="w-full h-full object-contain">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <span class="text-xs font-semibold text-slate-500 uppercase block">Código SENCE de Actividad</span>
+              <span class="text-base font-bold text-slate-900 font-mono block mt-1" id="det-sence">--</span>
+              <span class="text-xs text-emerald-600 font-medium">Registro Oficial SENCE</span>
             </div>
 
-            <!-- Título Institucional -->
-            <h3 class="cert-font-title text-center font-bold text-xs sm:text-base tracking-wide text-black uppercase leading-tight">
-              ACADEMIA BRISEIN LTDA.
-            </h3>
-            <p class="cert-font-title italic font-bold text-center text-[9px] sm:text-[11px] text-black leading-tight mt-0.5">
-              Empresa Asesora y Capacitadora en<br>Materias de Seguridad Privada
-            </p>
-          </div>
-
-          <!-- Marca de Agua Central -->
-          <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.14] z-0">
-            <img id="prev-watermark" src="assets/watermark_nch2728.png" alt="NCh 2728 Icontec" class="w-48 sm:w-60 object-contain">
-          </div>
-
-          <!-- Cuerpo Legal del Certificado -->
-          <div class="relative z-10 my-auto pl-8 sm:pl-10 pr-1 sm:pr-2 text-[9px] sm:text-[10.5px] text-black space-y-1.5">
-            
-            <p id="prev-body-paragraph" class="italic text-justify" style="text-align: justify; text-justify: inter-word; line-height: 1.65;">
-              <!-- Renderizado dinámico -->
-            </p>
-
-            <p class="font-bold text-black text-[9.5px] sm:text-[11px] pt-1">
-              Cº SENCE : <span id="prev-sence">0000000000</span>
-            </p>
-
-            <p class="italic text-black text-[8.5px] sm:text-[10px]">
-              <span id="prev-issue-date">En Santiago de Chile, a [Fecha Emisión].-</span>
-            </p>
-
-          </div>
-
-          <!-- Pie de Firmas y Timbres (Agrandados y prominentes) -->
-          <div class="relative z-10 pl-8 sm:pl-10 pr-2 flex items-center justify-center space-x-6 sm:space-x-10 pt-1 pb-1">
-            
-            <!-- Timbre Director Gerente Grande -->
-            <div class="w-18 h-18 sm:w-24 sm:h-24 shrink-0">
-              <img id="prev-stamp-seal" src="assets/stamp_seal.png" alt="Timbre Brisein" class="w-full h-full object-contain">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <span class="text-xs font-semibold text-slate-500 uppercase block">Duración y Modalidad</span>
+              <span class="text-base font-bold text-slate-900 block mt-1" id="det-hours">-- Horas Cronológicas</span>
+              <span class="text-xs text-slate-600" id="det-modalidad">Capacitación y Formación</span>
             </div>
 
-            <!-- Firma y Línea Ramón Briceño Grande -->
-            <div class="flex flex-col items-center text-center">
-              <div class="h-20 sm:h-24 w-40 sm:w-52 mb-[-12px]">
-                <img id="prev-signature" src="assets/signature.png" alt="Firma Ramón Briceño" class="h-full w-full object-contain">
-              </div>
-              <div class="w-40 sm:w-52 border-t border-slate-700 mt-1"></div>
-              <span class="italic text-[9px] sm:text-[11px] text-slate-900 font-serif leading-tight mt-0.5 font-medium">Ramón Briceño Rodríguez</span>
-              <span class="italic text-[8px] sm:text-[9.5px] text-slate-700 font-serif leading-tight">Director Gerente</span>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <span class="text-xs font-semibold text-slate-500 uppercase block">Período de Ejecución</span>
+              <span class="text-sm font-semibold text-slate-900 block mt-1" id="det-dates">--</span>
+              <span class="text-xs text-slate-500" id="det-issue">Fecha de Emisión: --</span>
             </div>
 
           </div>
-
         </div>
-      </div>
 
+        <!-- Acreditación y Respaldo Institucional -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-6 text-white shadow-inner">
+          <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+            
+            <div class="space-y-2 text-center md:text-left">
+              <div class="flex items-center justify-center md:justify-start space-x-2">
+                <span class="px-2.5 py-1 bg-red-600 text-white text-xs font-bold rounded">OTEC</span>
+                <h4 class="font-bold text-sm text-slate-100">CAPACITACIÓN BRICEÑO LIMITADA - ACADEMIA BRISEIN</h4>
+              </div>
+              <p class="text-xs text-slate-300">RUT: 76.464.790-4 | Casa Matriz: Santiago, Chile</p>
+              <p class="text-xs text-slate-400">
+                Acreditado bajo Norma Chilena <strong class="text-slate-200">NCh 2728:2015</strong> por <strong class="text-slate-200">ICONTEC Internacional</strong> (Registro INN: A-7858, Certificado: OC-CER547101).
+              </p>
+              <p class="text-xs text-slate-400">
+                Reglamentación: <strong class="text-slate-200">Ley Nº 21.659 - Art.46 y Decreto 209 (Seguridad Privada)</strong>.
+              </p>
+            </div>
+
+            <div class="flex items-center space-x-4 bg-white/10 p-3 rounded-lg border border-white/10 backdrop-blur-sm shrink-0">
+              <img src="assets/watermark_nch2728.png" alt="NCh 2728 Icontec" class="h-16 w-auto object-contain bg-white rounded p-1">
+              <div class="text-left text-xs">
+                <div class="font-bold text-white">NCh 2728:2015</div>
+                <div class="text-slate-300 text-[10px]">ICONTEC Internacional</div>
+                <div class="text-emerald-400 font-bold text-[10px] mt-1"><i class="fa-solid fa-check"></i> Vigente</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+          <button id="btn-download-pdf" class="w-full sm:w-auto px-6 py-3.5 bg-brisein-red hover:bg-brisein-darkRed text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-file-arrow-down text-lg"></i>
+            <span>Descargar Certificado Original (PDF)</span>
+          </button>
+          
+          <button id="btn-new-search" class="w-full sm:w-auto px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 border border-slate-300">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Consultar Otro Certificado</span>
+          </button>
+        </div>
+
+      </div>
     </div>
 
   </main>
 
-  <!-- Modal de Configuración (URL Base y Parámetros) -->
-  <div id="modal-settings" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-      
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="text-sm font-bold text-white flex items-center">
-          <i class="fa-solid fa-gear text-red-500 mr-2"></i> Configuración del Sistema
-        </h3>
-        <button id="btn-close-settings" class="text-slate-400 hover:text-white">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-
-      <div class="space-y-3 text-xs">
-        <div>
-          <label class="block font-semibold text-slate-300 mb-1">URL Pública del Validador QR:</label>
-          <input type="text" id="setting-base-url" value="https://valida.empresasbrisein.com" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none">
-          <p class="text-[10px] text-slate-400 mt-1">
-            Esta es la URL web a la que redirige el código QR impreso en el certificado.
-          </p>
-        </div>
-
-        <div>
-          <label class="block font-semibold text-slate-300 mb-1">Firma / Director Gerente:</label>
-          <input type="text" id="setting-signatory-name" value="Ramón Briceño Rodríguez" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none">
-        </div>
-
-        <div>
-          <label class="block font-semibold text-slate-300 mb-1">Cargo:</label>
-          <input type="text" id="setting-signatory-title" value="Director Gerente" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none">
-        </div>
-      </div>
-
-      <div class="flex justify-end pt-3 border-t border-slate-800 space-x-2">
-        <button id="btn-save-settings" class="px-4 py-2 bg-brisein-red hover:bg-brisein-darkRed text-white font-bold rounded-xl text-xs transition">
-          Guardar Ajustes
-        </button>
-      </div>
-
-    </div>
-  </div>
-
   <!-- Pie de Página -->
-  <footer class="bg-slate-950 border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
-    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-      <p>© 2026 ACADEMIA BRISEIN LTDA. | Todos los derechos reservados.</p>
-      <p class="text-[11px] text-slate-400">Emisión privada de certificados con firma digital y verificación QR.</p>
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-5xl mx-auto px-4">
+      <p>© 2026 ACADEMIA BRISEIN LTDA. Todos los derechos reservados.</p>
+      <p class="mt-1 text-[11px] text-slate-400">Certificación oficial verificable mediante firma digital y código QR único.</p>
     </div>
   </footer>
 
-  <!-- Lógica Principal de la Aplicación -->
-  <script src="js/app.js"></script>
+  <!-- Lógica de Verificación -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      let certData = null;
+
+      // 1. Verificar si viene en formato payload comprimido en ?c=
+      const payload = urlParams.get('c');
+      if (payload) {
+        try {
+          const jsonStr = decodeURIComponent(escape(atob(payload)));
+          const parsed = JSON.parse(jsonStr);
+
+          // Si viene en tupla compacta: [rut, name, codeSence, startDate, endDate, issueDate, companyName, companyRut]
+          if (Array.isArray(parsed)) {
+            const courseFound = (typeof COURSES_CATALOG !== 'undefined') ? 
+              COURSES_CATALOG.find(c => c.codeSence === parsed[2] || c.codeSenceFormatted === parsed[2]) : null;
+
+            certData = {
+              studentRut: parsed[0] || '',
+              cleanRut: (parsed[0] || '').replace(/[^0-9kK]/g, ''),
+              studentName: parsed[1] || '',
+              codeSence: parsed[2] || '',
+              startDate: parsed[3] || '',
+              endDate: parsed[4] || '',
+              issueDate: parsed[5] || '',
+              companyName: parsed[6] || '',
+              companyRut: parsed[7] || '',
+              courseName: courseFound ? courseFound.name : 'Curso de Capacitación y Seguridad Privada',
+              hours: courseFound ? courseFound.hours : 60,
+              legalNorm: courseFound ? courseFound.normativa : 'Ley Nº 21.659 sobre Seguridad Privada'
+            };
+          } else if (typeof parsed === 'object') {
+            certData = parsed;
+            if (!certData.courseName && certData.codeSence && typeof COURSES_CATALOG !== 'undefined') {
+              const c = COURSES_CATALOG.find(x => x.codeSence === certData.codeSence);
+              if (c) {
+                certData.courseName = c.name;
+                certData.hours = c.hours;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Error decodificando payload ?c=', e);
+        }
+      }
+
+      // 2. Si viene con parámetros directos (?rut=...&nombre=...&curso=...)
+      if (!certData) {
+        const rut = urlParams.get('rut') || urlParams.get('id') || urlParams.get('r');
+        const nombre = urlParams.get('nombre') || urlParams.get('n');
+        const curso = urlParams.get('curso');
+        const sence = urlParams.get('sence') || urlParams.get('c');
+        const horas = urlParams.get('horas') || urlParams.get('h');
+        const inicio = urlParams.get('inicio') || urlParams.get('i');
+        const termino = urlParams.get('termino') || urlParams.get('t');
+        const emision = urlParams.get('emision') || urlParams.get('e');
+
+        if (rut && (nombre || sence)) {
+          const cFound = (sence && typeof COURSES_CATALOG !== 'undefined') ? 
+            COURSES_CATALOG.find(c => c.codeSence === sence || c.codeSenceFormatted === sence) : null;
+
+          certData = {
+            studentName: nombre ? decodeURIComponent(nombre) : 'Participante Acreditado',
+            studentRut: decodeURIComponent(rut),
+            cleanRut: rut.replace(/[^0-9kK]/g, ''),
+            courseName: curso ? decodeURIComponent(curso) : (cFound ? cFound.name : 'Curso de Capacitación'),
+            codeSence: sence ? decodeURIComponent(sence) : '1238044236',
+            hours: horas ? parseInt(horas, 10) : (cFound ? cFound.hours : 40),
+            startDate: inicio ? decodeURIComponent(inicio) : '',
+            endDate: termino ? decodeURIComponent(termino) : '',
+            issueDate: emision ? decodeURIComponent(emision) : ''
+          };
+        }
+      }
+
+      // 3. Si se escaneó un QR o se pasó un certificado, mostrar la tarjeta de verificación
+      if (certData && certData.studentName && (certData.courseName || certData.codeSence)) {
+        showVerification(certData);
+      } else {
+        showHome();
+      }
+
+      // Evento de búsqueda por RUT
+      document.getElementById('btn-search-rut').addEventListener('click', handleSearch);
+      document.getElementById('input-rut-search').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleSearch();
+      });
+
+      function handleSearch() {
+        const val = document.getElementById('input-rut-search').value.trim();
+        const msg = document.getElementById('search-msg');
+        if (!val) {
+          msg.textContent = 'Por favor ingresa un RUT para consultar.';
+          msg.className = 'text-xs text-red-500 text-left font-medium';
+          return;
+        }
+
+        const clean = val.replace(/[^0-9kK]/g, '').toUpperCase();
+        const stored = localStorage.getItem(`cert_${clean}`);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            showVerification(parsed);
+            return;
+          } catch (e) {}
+        }
+
+        msg.textContent = `No se encontró un certificado registrado para el RUT ${val}. Escanea directamente el código QR del documento.`;
+        msg.className = 'text-xs text-amber-600 text-left font-medium';
+      }
+
+      // Botón para volver a consultar
+      document.getElementById('btn-new-search').addEventListener('click', () => {
+        window.history.pushState({}, document.title, window.location.pathname);
+        showHome();
+      });
+
+      // Evento descargar PDF
+      document.getElementById('btn-download-pdf').addEventListener('click', async () => {
+        if (!certData) return;
+        const btn = document.getElementById('btn-download-pdf');
+        const origContent = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generando PDF...';
+        btn.disabled = true;
+        
+        try {
+          const pdfBytes = await CertificatePdfBuilder.buildCertificate(certData);
+          const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Certificado_${certData.cleanRut || 'Brisein'}_${certData.studentName.replace(/\s+/g, '_')}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } catch (err) {
+          alert('Error al generar PDF: ' + err.message);
+        } finally {
+          btn.innerHTML = origContent;
+          btn.disabled = false;
+        }
+      });
+    });
+
+    function showHome() {
+      document.getElementById('home-view').classList.remove('hidden');
+      document.getElementById('valid-card').classList.add('hidden');
+      document.getElementById('input-rut-search').value = '';
+    }
+
+    function showVerification(cert) {
+      document.getElementById('home-view').classList.add('hidden');
+      document.getElementById('valid-card').classList.remove('hidden');
+
+      document.getElementById('out-name').textContent = cert.studentName;
+      document.getElementById('out-rut').textContent = cert.studentRut;
+      document.getElementById('out-course').textContent = `“${(cert.courseName || '').toUpperCase()}”`;
+      
+      const issueFormatted = CertificatePdfBuilder.formatIssueDate(cert.issueDate || cert.endDate || new Date())
+                              .replace('En Santiago de Chile, a ', '')
+                              .replace('.-', '');
+      document.getElementById('out-issue').textContent = issueFormatted;
+
+      document.getElementById('det-name').textContent = cert.studentName;
+      document.getElementById('det-rut').textContent = `RUT: ${cert.studentRut}`;
+      document.getElementById('det-sence').textContent = cert.codeSence || cert.codeSenceFormatted || '1238044236';
+      document.getElementById('det-hours').textContent = `${cert.hours || 40} Horas Cronológicas`;
+      
+      const startText = CertificatePdfBuilder.formatDayMonthYear(cert.startDate, true);
+      const endText = CertificatePdfBuilder.formatDayMonthYear(cert.endDate, true);
+      document.getElementById('det-dates').textContent = `${startText} al ${endText}`;
+      document.getElementById('det-issue').textContent = `Fecha de Emisión: ${issueFormatted}`;
+    }
+  </script>
 </body>
 </html>
