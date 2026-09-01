@@ -250,10 +250,12 @@
           const jsonStr = decodeURIComponent(escape(atob(payload)));
           const parsed = JSON.parse(jsonStr);
 
-          // Si viene en tupla compacta: [rut, name, codeSence, startDate, endDate, issueDate, companyName, companyRut]
+          // Si viene en tupla compacta: [rut, name, codeSence, startDate, endDate, issueDate, companyName, companyRut, hours, courseName, legalNorm]
           if (Array.isArray(parsed)) {
             const courseFound = (typeof COURSES_CATALOG !== 'undefined') ? 
               COURSES_CATALOG.find(c => c.codeSence === parsed[2] || c.codeSenceFormatted === parsed[2]) : null;
+
+            const customHours = (parsed[8] !== undefined && parsed[8] !== null && parsed[8] !== '') ? parseInt(parsed[8], 10) : null;
 
             certData = {
               studentRut: parsed[0] || '',
@@ -265,17 +267,22 @@
               issueDate: parsed[5] || '',
               companyName: parsed[6] || '',
               companyRut: parsed[7] || '',
-              courseName: courseFound ? courseFound.name : 'Curso de Capacitación y Seguridad Privada',
-              hours: courseFound ? courseFound.hours : 60,
-              legalNorm: courseFound ? courseFound.normativa : 'Ley Nº 21.659 sobre Seguridad Privada'
+              hours: (customHours !== null && !isNaN(customHours) && customHours > 0) ? customHours : (courseFound ? courseFound.hours : 60),
+              courseName: (parsed[9] && parsed[9].trim()) ? parsed[9].trim() : (courseFound ? courseFound.name : 'Curso de Capacitación y Seguridad Privada'),
+              legalNorm: (parsed[10] && parsed[10].trim()) ? parsed[10].trim() : (courseFound ? courseFound.normativa : 'Ley Nº 21.659 sobre Seguridad Privada')
             };
           } else if (typeof parsed === 'object') {
             certData = parsed;
+            if (!certData.hours && certData.codeSence && typeof COURSES_CATALOG !== 'undefined') {
+              const c = COURSES_CATALOG.find(x => x.codeSence === certData.codeSence);
+              if (c) {
+                certData.hours = c.hours;
+              }
+            }
             if (!certData.courseName && certData.codeSence && typeof COURSES_CATALOG !== 'undefined') {
               const c = COURSES_CATALOG.find(x => x.codeSence === certData.codeSence);
               if (c) {
                 certData.courseName = c.name;
-                certData.hours = c.hours;
               }
             }
           }

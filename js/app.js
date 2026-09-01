@@ -522,7 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let base = state.baseUrl ? state.baseUrl.trim() : 'https://valida.empresasbrisein.com';
 
     // Tupla compacta para mantener el QR con cuadros grandes y fácil escaneo:
-    // [rut, name, codeSence, startDate, endDate, issueDate, companyName, companyRut]
+    // [0: rut, 1: name, 2: codeSence, 3: startDate, 4: endDate, 5: issueDate, 6: companyName, 7: companyRut, 8: hours, 9: courseName, 10: legalNorm]
     const tuple = [
       student.rut || '12.345.678-9',
       student.name || 'Alumno',
@@ -531,7 +531,10 @@ document.addEventListener('DOMContentLoaded', () => {
       state.endDate || '',
       state.issueDate || todayFormatted,
       (state.companyName || '').trim(),
-      (state.companyRut || '').trim()
+      (state.companyRut || '').trim(),
+      parseInt(state.hours, 10) || 0,
+      (state.courseName || '').trim(),
+      (state.legalNorm || '').trim()
     ];
 
     const jsonStr = JSON.stringify(tuple);
