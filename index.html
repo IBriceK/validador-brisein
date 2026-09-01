@@ -32,8 +32,10 @@
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
   
+  <!-- Application & Cryptographic Modules -->
   <script src="js/assets-data.js"></script>
   <script src="js/courses.js"></script>
+  <script src="js/crypto-auth.js"></script>
   <script src="js/pdf-builder.js"></script>
 
   <style>
@@ -63,7 +65,7 @@
       </div>
       <div class="flex items-center space-x-2 bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 text-xs px-3 py-1.5 rounded-full font-medium shadow-inner">
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span>Sistema de Autenticación Activo</span>
+        <span>Sistema de Autenticación Criptográfica</span>
       </div>
     </div>
   </header>
@@ -71,7 +73,7 @@
   <!-- Contenido Principal -->
   <main class="max-w-4xl mx-auto px-4 py-8 flex-1 w-full">
     
-    <!-- VISTA 1: VISTA INICIAL (Cuando se entra a la web sin escanear QR) -->
+    <!-- VISTA 1: VISTA INICIAL (Buscador por RUT) -->
     <div id="home-view" class="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 sm:p-12 text-center space-y-8">
       
       <div class="w-20 h-20 bg-red-50 text-brisein-red rounded-3xl mx-auto flex items-center justify-center shadow-inner">
@@ -81,7 +83,7 @@
       <div class="max-w-xl mx-auto space-y-2">
         <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Verificación Digital de Certificados</h2>
         <p class="text-slate-600 text-sm leading-relaxed">
-          Consulta y valida la autenticidad de los certificados emitidos por <strong>Academia BRISEIN LTDA.</strong> acreditados bajo la norma <strong>NCh 2728:2015</strong>.
+          Consulta y valida la autenticidad de los certificados emitidos por <strong>Academia BRISEIN LTDA.</strong> acreditados bajo la norma <strong>NCh 2728:2015</strong> con firma digital verificable.
         </p>
       </div>
 
@@ -106,20 +108,20 @@
           <p class="text-[11px] text-slate-500 mt-1">Norma Chilena NCh 2728:2015 por ICONTEC Internacional.</p>
         </div>
         <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
-          <i class="fa-solid fa-scale-balanced text-brisein-red text-xl mb-2"></i>
-          <h4 class="text-xs font-bold text-slate-900">Marco Legal Oficial</h4>
-          <p class="text-[11px] text-slate-500 mt-1">Cumplimiento Ley Nº 21.659 (Art. 46) y Decreto 209.</p>
+          <i class="fa-solid fa-key text-brisein-red text-xl mb-2"></i>
+          <h4 class="text-xs font-bold text-slate-900">Criptografía ECDSA</h4>
+          <p class="text-[11px] text-slate-500 mt-1">Firma asimétrica infalsificable validada matemáticamente.</p>
         </div>
         <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
           <i class="fa-solid fa-shield-check text-brisein-red text-xl mb-2"></i>
           <h4 class="text-xs font-bold text-slate-900">Firma Verificable</h4>
-          <p class="text-[11px] text-slate-500 mt-1">Autenticidad respaldada por código QR único e infalsificable.</p>
+          <p class="text-[11px] text-slate-500 mt-1">Autenticidad respaldada por código QR único e inviolable.</p>
         </div>
       </div>
 
     </div>
 
-    <!-- VISTA 2: TARJETA DE RESULTADO DE CERTIFICADO VERIFICADO (Cuando se escanea el QR) -->
+    <!-- VISTA 2: TARJETA DE RESULTADO DE CERTIFICADO VERIFICADO (Cuando el QR es auténtico) -->
     <div id="valid-card" class="hidden bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
       
       <!-- Banner de Estado Verde -->
@@ -131,7 +133,10 @@
           <i class="fa-solid fa-circle-check text-3xl"></i>
         </div>
         <h2 class="text-2xl font-bold tracking-tight">CERTIFICADO AUTÉNTICO Y VÁLIDO</h2>
-        <p class="text-emerald-100 text-sm mt-1 font-medium">Verificación Digital Oficial de Acreditación</p>
+        <p class="text-emerald-100 text-sm mt-1 font-medium flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-lock text-xs"></i>
+          <span id="valid-badge-text">Verificación Digital Oficial de Acreditación</span>
+        </p>
       </div>
 
       <div class="p-6 md:p-10 space-y-8">
@@ -227,100 +232,97 @@
       </div>
     </div>
 
+    <!-- VISTA 3: ALERTA DE CERTIFICADO INVÁLIDO O ADULTERADO (Cuando falla la validación) -->
+    <div id="invalid-card" class="hidden bg-white rounded-2xl shadow-xl border border-red-200 overflow-hidden">
+      
+      <!-- Banner de Estado Rojo -->
+      <div class="bg-gradient-to-r from-red-600 via-red-700 to-rose-900 px-6 py-8 text-white text-center relative overflow-hidden">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-white text-red-600 rounded-full shadow-lg mb-3">
+          <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
+        </div>
+        <h2 class="text-2xl font-black tracking-tight">CERTIFICADO INVÁLIDO O NO RECONOCIDO</h2>
+        <p class="text-red-100 text-sm mt-1 font-medium">Alerta de Seguridad y Autenticidad Institucional</p>
+      </div>
+
+      <div class="p-8 sm:p-10 space-y-6 text-center">
+        <div class="max-w-xl mx-auto space-y-3">
+          <p class="text-slate-700 text-base leading-relaxed" id="invalid-reason-text">
+            El código o enlace consultado no cuenta con un registro oficial válido ni con la firma digital autorizada de <strong>Academia BRISEIN LTDA.</strong>
+          </p>
+          <p class="text-xs text-slate-500">
+            Si considera que se trata de un error, comuníquese con el departamento de registro académico de Academia BRISEIN LTDA.
+          </p>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100">
+          <button id="btn-invalid-retry" class="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-xl transition shadow">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Volver al Portal de Búsqueda
+          </button>
+        </div>
+      </div>
+
+    </div>
+
   </main>
 
   <!-- Pie de Página -->
   <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
     <div class="max-w-5xl mx-auto px-4">
       <p>© 2026 ACADEMIA BRISEIN LTDA. Todos los derechos reservados.</p>
-      <p class="mt-1 text-[11px] text-slate-400">Certificación oficial verificable mediante firma digital y código QR único.</p>
+      <p class="mt-1 text-[11px] text-slate-400">Certificación oficial verificable mediante firma digital criptográfica ECDSA y código QR único.</p>
     </div>
   </footer>
 
   <!-- Lógica de Verificación -->
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       const urlParams = new URLSearchParams(window.location.search);
       let certData = null;
 
-      // 1. Verificar si viene en formato payload comprimido en ?c=
+      // 1. Verificar si viene en formato payload en ?c=
       const payload = urlParams.get('c');
       if (payload) {
-        try {
-          const jsonStr = decodeURIComponent(escape(atob(payload)));
-          const parsed = JSON.parse(jsonStr);
+        if (typeof BriseinValidatorCrypto !== 'undefined') {
+          try {
+            const result = await BriseinValidatorCrypto.verifyPayload(payload);
+            if (result.valid && result.data) {
+              const parsed = result.data;
+              if (Array.isArray(parsed)) {
+                const courseFound = (typeof COURSES_CATALOG !== 'undefined') ? 
+                  COURSES_CATALOG.find(c => c.codeSence === parsed[2] || c.codeSenceFormatted === parsed[2]) : null;
 
-          // Si viene en tupla compacta: [rut, name, codeSence, startDate, endDate, issueDate, companyName, companyRut, hours, courseName, legalNorm]
-          if (Array.isArray(parsed)) {
-            const courseFound = (typeof COURSES_CATALOG !== 'undefined') ? 
-              COURSES_CATALOG.find(c => c.codeSence === parsed[2] || c.codeSenceFormatted === parsed[2]) : null;
+                const customHours = (parsed[8] !== undefined && parsed[8] !== null && parsed[8] !== '') ? parseInt(parsed[8], 10) : null;
 
-            const customHours = (parsed[8] !== undefined && parsed[8] !== null && parsed[8] !== '') ? parseInt(parsed[8], 10) : null;
-
-            certData = {
-              studentRut: parsed[0] || '',
-              cleanRut: (parsed[0] || '').replace(/[^0-9kK]/g, ''),
-              studentName: parsed[1] || '',
-              codeSence: parsed[2] || '',
-              startDate: parsed[3] || '',
-              endDate: parsed[4] || '',
-              issueDate: parsed[5] || '',
-              companyName: parsed[6] || '',
-              companyRut: parsed[7] || '',
-              hours: (customHours !== null && !isNaN(customHours) && customHours > 0) ? customHours : (courseFound ? courseFound.hours : 60),
-              courseName: (parsed[9] && parsed[9].trim()) ? parsed[9].trim() : (courseFound ? courseFound.name : 'Curso de Capacitación y Seguridad Privada'),
-              legalNorm: (parsed[10] && parsed[10].trim()) ? parsed[10].trim() : (courseFound ? courseFound.normativa : 'Ley Nº 21.659 sobre Seguridad Privada')
-            };
-          } else if (typeof parsed === 'object') {
-            certData = parsed;
-            if (!certData.hours && certData.codeSence && typeof COURSES_CATALOG !== 'undefined') {
-              const c = COURSES_CATALOG.find(x => x.codeSence === certData.codeSence);
-              if (c) {
-                certData.hours = c.hours;
+                certData = {
+                  studentRut: parsed[0] || '',
+                  cleanRut: (parsed[0] || '').replace(/[^0-9kK]/g, ''),
+                  studentName: parsed[1] || '',
+                  codeSence: parsed[2] || '',
+                  startDate: parsed[3] || '',
+                  endDate: parsed[4] || '',
+                  issueDate: parsed[5] || '',
+                  companyName: parsed[6] || '',
+                  companyRut: parsed[7] || '',
+                  hours: (customHours !== null && !isNaN(customHours) && customHours > 0) ? customHours : (courseFound ? courseFound.hours : 60),
+                  courseName: (parsed[9] && parsed[9].trim()) ? parsed[9].trim() : (courseFound ? courseFound.name : 'Curso de Capacitación y Seguridad Privada'),
+                  legalNorm: (parsed[10] && parsed[10].trim()) ? parsed[10].trim() : (courseFound ? courseFound.normativa : 'Ley Nº 21.659 sobre Seguridad Privada'),
+                  isLegacy: result.isLegacy
+                };
               }
+            } else {
+              // Certificado adulterado o no válido
+              showInvalid(result.reason || 'El certificado no figura en los registros oficiales.');
+              return;
             }
-            if (!certData.courseName && certData.codeSence && typeof COURSES_CATALOG !== 'undefined') {
-              const c = COURSES_CATALOG.find(x => x.codeSence === certData.codeSence);
-              if (c) {
-                certData.courseName = c.name;
-              }
-            }
+          } catch (e) {
+            console.error('Error verificando payload:', e);
+            showInvalid('Error al procesar la firma digital del certificado.');
+            return;
           }
-        } catch (e) {
-          console.warn('Error decodificando payload ?c=', e);
         }
       }
 
-      // 2. Si viene con parámetros directos (?rut=...&nombre=...&curso=...)
-      if (!certData) {
-        const rut = urlParams.get('rut') || urlParams.get('id') || urlParams.get('r');
-        const nombre = urlParams.get('nombre') || urlParams.get('n');
-        const curso = urlParams.get('curso');
-        const sence = urlParams.get('sence') || urlParams.get('c');
-        const horas = urlParams.get('horas') || urlParams.get('h');
-        const inicio = urlParams.get('inicio') || urlParams.get('i');
-        const termino = urlParams.get('termino') || urlParams.get('t');
-        const emision = urlParams.get('emision') || urlParams.get('e');
-
-        if (rut && (nombre || sence)) {
-          const cFound = (sence && typeof COURSES_CATALOG !== 'undefined') ? 
-            COURSES_CATALOG.find(c => c.codeSence === sence || c.codeSenceFormatted === sence) : null;
-
-          certData = {
-            studentName: nombre ? decodeURIComponent(nombre) : 'Participante Acreditado',
-            studentRut: decodeURIComponent(rut),
-            cleanRut: rut.replace(/[^0-9kK]/g, ''),
-            courseName: curso ? decodeURIComponent(curso) : (cFound ? cFound.name : 'Curso de Capacitación'),
-            codeSence: sence ? decodeURIComponent(sence) : '1238044236',
-            hours: horas ? parseInt(horas, 10) : (cFound ? cFound.hours : 40),
-            startDate: inicio ? decodeURIComponent(inicio) : '',
-            endDate: termino ? decodeURIComponent(termino) : '',
-            issueDate: emision ? decodeURIComponent(emision) : ''
-          };
-        }
-      }
-
-      // 3. Si se escaneó un QR o se pasó un certificado, mostrar la tarjeta de verificación
+      // 2. Si se validó con éxito, mostrar la tarjeta oficial
       if (certData && certData.studentName && (certData.courseName || certData.codeSence)) {
         showVerification(certData);
       } else {
@@ -356,11 +358,14 @@
         msg.className = 'text-xs text-amber-600 text-left font-medium';
       }
 
-      // Botón para volver a consultar
-      document.getElementById('btn-new-search').addEventListener('click', () => {
+      // Botones para volver al inicio
+      document.getElementById('btn-new-search').addEventListener('click', goHome);
+      document.getElementById('btn-invalid-retry').addEventListener('click', goHome);
+
+      function goHome() {
         window.history.pushState({}, document.title, window.location.pathname);
         showHome();
-      });
+      }
 
       // Evento descargar PDF
       document.getElementById('btn-download-pdf').addEventListener('click', async () => {
@@ -393,11 +398,22 @@
     function showHome() {
       document.getElementById('home-view').classList.remove('hidden');
       document.getElementById('valid-card').classList.add('hidden');
+      document.getElementById('invalid-card').classList.add('hidden');
       document.getElementById('input-rut-search').value = '';
+    }
+
+    function showInvalid(reason) {
+      document.getElementById('home-view').classList.add('hidden');
+      document.getElementById('valid-card').classList.add('hidden');
+      document.getElementById('invalid-card').classList.remove('hidden');
+      if (reason) {
+        document.getElementById('invalid-reason-text').textContent = reason;
+      }
     }
 
     function showVerification(cert) {
       document.getElementById('home-view').classList.add('hidden');
+      document.getElementById('invalid-card').classList.add('hidden');
       document.getElementById('valid-card').classList.remove('hidden');
 
       document.getElementById('out-name').textContent = cert.studentName;
@@ -418,6 +434,12 @@
       const endText = CertificatePdfBuilder.formatDayMonthYear(cert.endDate, true);
       document.getElementById('det-dates').textContent = `${startText} al ${endText}`;
       document.getElementById('det-issue').textContent = `Fecha de Emisión: ${issueFormatted}`;
+
+      if (cert.isLegacy) {
+        document.getElementById('valid-badge-text').textContent = 'Registro Histórico Oficial Verificado';
+      } else {
+        document.getElementById('valid-badge-text').textContent = 'Firma Digital Criptográfica ECDSA P-256 Verificada';
+      }
     }
   </script>
 </body>
