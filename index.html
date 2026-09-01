@@ -73,7 +73,7 @@
   <!-- Contenido Principal -->
   <main class="max-w-4xl mx-auto px-4 py-8 flex-1 w-full">
     
-    <!-- VISTA 1: VISTA INICIAL (Buscador por RUT) -->
+    <!-- VISTA 1: VISTA INICIAL (Instrucciones de Escaneo QR) -->
     <div id="home-view" class="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 sm:p-12 text-center space-y-8">
       
       <div class="w-20 h-20 bg-red-50 text-brisein-red rounded-3xl mx-auto flex items-center justify-center shadow-inner">
@@ -83,21 +83,23 @@
       <div class="max-w-xl mx-auto space-y-2">
         <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Verificación Digital de Certificados</h2>
         <p class="text-slate-600 text-sm leading-relaxed">
-          Consulta y valida la autenticidad de los certificados emitidos por <strong>Academia BRISEIN LTDA.</strong> acreditados bajo la norma <strong>NCh 2728:2015</strong> con firma digital verificable.
+          Portal institucional para validar la autenticidad de los certificados emitidos por <strong>Academia BRISEIN LTDA.</strong> acreditados bajo la norma <strong>NCh 2728:2015</strong> con firma digital verificable.
         </p>
       </div>
 
-      <!-- Buscador por RUT -->
-      <div class="max-w-md mx-auto bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider text-left">Consultar por RUT del Alumno:</label>
-        <div class="flex gap-2">
-          <input type="text" id="input-rut-search" placeholder="Ej: 23.801.671-1" class="flex-1 px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-red-500 focus:outline-none shadow-sm">
-          <button id="btn-search-rut" class="px-6 py-3 bg-brisein-red hover:bg-brisein-darkRed text-white text-sm font-bold rounded-xl transition shadow flex items-center space-x-1.5">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <span>Verificar</span>
-          </button>
+      <!-- Tarjeta Guía de Escaneo QR -->
+      <div class="max-w-md mx-auto bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div class="w-12 h-12 bg-red-100 text-brisein-red rounded-xl mx-auto flex items-center justify-center">
+          <i class="fa-solid fa-camera text-xl"></i>
         </div>
-        <p id="search-msg" class="text-xs text-slate-400 text-left">Ingresa el RUT con o sin puntos y guión.</p>
+        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide">¿Cómo verificar un certificado?</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Para verificar la autenticidad de un documento, <strong>apunte con la cámara de su teléfono móvil o lector de códigos</strong> al código QR impreso en la esquina superior del certificado oficial.
+        </p>
+        <div class="inline-flex items-center space-x-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Validación Criptográfica Instantánea</span>
+        </div>
       </div>
 
       <!-- Sellos y Respaldo Institucional -->
@@ -222,11 +224,6 @@
             <i class="fa-solid fa-file-arrow-down text-lg"></i>
             <span>Descargar Certificado Original (PDF)</span>
           </button>
-          
-          <button id="btn-new-search" class="w-full sm:w-auto px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 border border-slate-300">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <span>Consultar Otro Certificado</span>
-          </button>
         </div>
 
       </div>
@@ -256,7 +253,7 @@
 
         <div class="pt-4 border-t border-slate-100">
           <button id="btn-invalid-retry" class="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-xl transition shadow">
-            <i class="fa-solid fa-arrow-left mr-2"></i> Volver al Portal de Búsqueda
+            <i class="fa-solid fa-arrow-left mr-2"></i> Volver al Portal
           </button>
         </div>
       </div>
@@ -329,77 +326,49 @@
         showHome();
       }
 
-      // Evento de búsqueda por RUT
-      document.getElementById('btn-search-rut').addEventListener('click', handleSearch);
-      document.getElementById('input-rut-search').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleSearch();
-      });
-
-      function handleSearch() {
-        const val = document.getElementById('input-rut-search').value.trim();
-        const msg = document.getElementById('search-msg');
-        if (!val) {
-          msg.textContent = 'Por favor ingresa un RUT para consultar.';
-          msg.className = 'text-xs text-red-500 text-left font-medium';
-          return;
-        }
-
-        const clean = val.replace(/[^0-9kK]/g, '').toUpperCase();
-        const stored = localStorage.getItem(`cert_${clean}`);
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored);
-            showVerification(parsed);
-            return;
-          } catch (e) {}
-        }
-
-        msg.textContent = `No se encontró un certificado registrado para el RUT ${val}. Escanea directamente el código QR del documento.`;
-        msg.className = 'text-xs text-amber-600 text-left font-medium';
-      }
-
-      // Botones para volver al inicio
-      document.getElementById('btn-new-search').addEventListener('click', goHome);
-      document.getElementById('btn-invalid-retry').addEventListener('click', goHome);
-
-      function goHome() {
-        window.history.pushState({}, document.title, window.location.pathname);
-        showHome();
+      // Botón para volver al inicio
+      const btnRetry = document.getElementById('btn-invalid-retry');
+      if (btnRetry) {
+        btnRetry.addEventListener('click', () => {
+          window.history.pushState({}, document.title, window.location.pathname);
+          showHome();
+        });
       }
 
       // Evento descargar PDF
-      document.getElementById('btn-download-pdf').addEventListener('click', async () => {
-        if (!certData) return;
-        const btn = document.getElementById('btn-download-pdf');
-        const origContent = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generando PDF...';
-        btn.disabled = true;
-        
-        try {
-          const pdfBytes = await CertificatePdfBuilder.buildCertificate(certData);
-          const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `Certificado_${certData.cleanRut || 'Brisein'}_${certData.studentName.replace(/\s+/g, '_')}.pdf`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        } catch (err) {
-          alert('Error al generar PDF: ' + err.message);
-        } finally {
-          btn.innerHTML = origContent;
-          btn.disabled = false;
-        }
-      });
+      const btnPdf = document.getElementById('btn-download-pdf');
+      if (btnPdf) {
+        btnPdf.addEventListener('click', async () => {
+          if (!certData) return;
+          const origContent = btnPdf.innerHTML;
+          btnPdf.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generando PDF...';
+          btnPdf.disabled = true;
+          
+          try {
+            const pdfBytes = await CertificatePdfBuilder.buildCertificate(certData);
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Certificado_${certData.cleanRut || 'Brisein'}_${certData.studentName.replace(/\s+/g, '_')}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          } catch (err) {
+            alert('Error al generar PDF: ' + err.message);
+          } finally {
+            btnPdf.innerHTML = origContent;
+            btnPdf.disabled = false;
+          }
+        });
+      }
     });
 
     function showHome() {
       document.getElementById('home-view').classList.remove('hidden');
       document.getElementById('valid-card').classList.add('hidden');
       document.getElementById('invalid-card').classList.add('hidden');
-      document.getElementById('input-rut-search').value = '';
     }
 
     function showInvalid(reason) {
